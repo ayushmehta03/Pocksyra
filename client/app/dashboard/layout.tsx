@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { AppShell } from "@/components/app-shell";
 import { useAuth } from "@/components/auth-provider";
+import { OfflineBanner } from "@/components/pwa/offline-banner";
 import { Spinner } from "@/components/ui";
 import { PENDING_INVITE_KEY } from "@/lib/invite";
 
@@ -31,5 +32,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }, [user, router]);
 
   if (loading || !user) return <Spinner />;
-  return <AppShell user={user}>{children}</AppShell>;
+  return (
+    <AppShell user={user}>
+      <OfflineBanner />
+      {children}
+    </AppShell>
+  );
 }
