@@ -23,7 +23,7 @@ var (
 	ErrNotFound      = errors.New("not found")
 	ErrInvalid       = errors.New("invalid input")
 	ErrNotFriends    = errors.New("everyone in an expense must be your friend")
-	ErrNoOtherPeople = errors.New("add at least one other person")
+	ErrNoOtherPeople = errors.New("add at least one other person") // kept for callers that need a shared expense
 )
 
 const (
@@ -89,10 +89,11 @@ func (s *Service) applyDeltas(ctx context.Context, currency string, ds []ledger.
 	return nil
 }
 
-// requireFriends checks that me has an accepted friendship with every id in others.
+// requireFriends checks that me has an accepted friendship with every id in
+// others. An empty list is fine: a personal expense with nobody else involved.
 func (s *Service) requireFriends(ctx context.Context, me bson.ObjectID, others []bson.ObjectID) error {
 	if len(others) == 0 {
-		return ErrNoOtherPeople
+		return nil
 	}
 	pairs := make(bson.A, 0, len(others))
 	for _, o := range others {
