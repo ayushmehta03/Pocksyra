@@ -2,6 +2,7 @@ package expenses
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 
@@ -59,6 +60,7 @@ func fail(c *gin.Context, err error) {
 		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
 	default:
 		_ = c.Error(err)
+		slog.Error("expenses request failed", "method", c.Request.Method, "path", c.FullPath(), "err", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong"})
 	}
 }
