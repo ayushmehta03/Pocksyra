@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"context"
 	"time"
 
@@ -34,6 +35,25 @@ func Connect(ctx context.Context, uri string) (*mongo.Client, error) {
 		return nil, err
 	}
 	return client, nil
+}
+
+// RequireReplicaSet fails fast, with a useful message, when MongoDB is not a
+// replica set member or mongos. Expenses and balances are written in
+// multi-document transactions, which standalone servers reject, so without
+// this check the first expense save would fail with an opaque 500.
+func RequireReplicaSet(ctx context.Context, db *mongo.Database) error {
+	var res struct {
+		SetName string `bson:"setName"`
+		Msg     string `bson:"msg"`
+	}
+	if err := db.RunCommand(ctx, bson.D{{Key: "hello", Value: 1}}).Decode(&res); err != nil {
+		return err
+	}
+	if res.SetName == "" && res.Msg != "isdbgrid" {
+		return errors.New("MongoDB is running standalone, but Pocksyra needs a replica set for transactions. " +
+			"Use the docker-compose mongo service (replica set rs0), and make sure MONGO_URI points at it and not at another local mongod")
+	}
+	return nil
 }
 
 // EnsureIndexes is idempotent; safe to call on every boot.
