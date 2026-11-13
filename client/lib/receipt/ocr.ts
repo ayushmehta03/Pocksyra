@@ -1,4 +1,5 @@
 import { parseReceipt, type OcrLine, type ParsedReceipt } from "./parser";
+import { isPdf, readPdfText, renderPdfPages } from "./pdf";
 import { preprocessImage } from "./preprocess";
 
 export type ScanProgress = { status: string; progress: number };
@@ -46,23 +47,49 @@ function linesOf(data: RawData): OcrLine[] {
   return (data.text ?? "").split("\n").map((text) => ({ text, confidence: data.confidence ?? 0 }));
 }
 
+/** OCR one image: preprocess, recognize, return lines plus page-level confidence (0-1). */
+async function ocrImage(image: Blob): Promise<{ lines: OcrLine[]; confidence: number }> {
+  const prepared = await preprocessImage(image);
+  const worker = await getWorker();
+  const { data } = await worker.recognize(prepared, {}, { blocks: true, text: true });
+  const raw = data as unknown as RawData;
+  return { lines: linesOf(raw), confidence: Math.max(0, Math.min(1, (raw.confidence ?? 0) / 100)) };
+}
+
 /**
- * Reads a receipt photo and returns the merchant, date, total and line items,
- * each with a confidence. The image never leaves the device.
+ * Reads a receipt (photo or PDF) and returns the merchant, date, total and
+ * line items, each with a confidence. Nothing leaves the device.
+ *
+ * - Photos: preprocessed and OCR'd.
+ * - Digital PDFs: the embedded text is read directly (exact, no OCR).
+ * - Scanned PDFs: pages are rendered to images, then OCR'd.
  *
  * Kept behind this one function so a cloud OCR engine could replace it later
  * without touching the form.
  */
-export async function extractReceipt(image: Blob, progress?: (p: ScanProgress) => void): Promise<ScanResult> {
+export async function extractReceipt(file: File | Blob, progress?: (p: ScanProgress) => void): Promise<ScanResult> {
   onProgress = progress;
   try {
+    if (isPdf(file as Blob & { name?: string })) {
+      progress?.({ status: "reading pdf", progress: 0 });
+      const text = await readPdfText(file);
+      if (text) return { ...parseReceipt(text), ocrConfidence: 0.98 };
+
+      // Scanned PDF: no text layer, so render and OCR.
+      const pages = await renderPdfPages(file);
+      const lines: OcrLine[] = [];
+      let conf = 0;
+      for (const page of pages) {
+        const r = await ocrImage(page);
+        lines.push(...r.lines);
+        conf += r.confidence;
+      }
+      return { ...parseReceipt(lines), ocrConfidence: pages.length ? conf / pages.length : 0 };
+    }
+
     progress?.({ status: "preparing image", progress: 0 });
-    const prepared = await preprocessImage(image);
-    const worker = await getWorker();
-    const { data } = await worker.recognize(prepared, {}, { blocks: true, text: true });
-    const raw = data as unknown as RawData;
-    const parsed = parseReceipt(linesOf(raw));
-    return { ...parsed, ocrConfidence: Math.max(0, Math.min(1, (raw.confidence ?? 0) / 100)) };
+    const { lines, confidence } = await ocrImage(file);
+    return { ...parseReceipt(lines), ocrConfidence: confidence };
   } finally {
     onProgress = undefined;
   }
