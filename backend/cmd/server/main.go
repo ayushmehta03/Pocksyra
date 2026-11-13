@@ -23,7 +23,9 @@ import (
 func main() {
 	log := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
-	_ = godotenv.Load() // optional .env for local dev
+	// Optional .env for local dev. Also look in parent dirs so it works when
+	// started from backend/ or backend/cmd/server (e.g. via air).
+	_ = godotenv.Load(".env", "../.env", "../../.env")
 	cfg, err := config.Load()
 	if err != nil {
 		log.Error("config", "err", err)
