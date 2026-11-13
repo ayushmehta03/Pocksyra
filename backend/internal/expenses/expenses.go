@@ -25,14 +25,28 @@ type SplitInput struct {
 	Value int64 `json:"value"`
 }
 
+// Categories an expense can be filed under (drives the spend summary).
+var categories = map[string]bool{
+	"food": true, "groceries": true, "transport": true, "rent": true, "utilities": true,
+	"entertainment": true, "travel": true, "shopping": true, "health": true, "other": true,
+}
+
+type ReceiptMetaInput struct {
+	OCRConfidence float64 `json:"ocrConfidence"` // 0-1
+}
+
 type ExpenseInput struct {
-	Description string       `json:"description"`
-	Amount      int64        `json:"amount"` // minor units
-	Currency    string       `json:"currency"`
-	PaidBy      string       `json:"paidBy"`
-	Method      string       `json:"method"`
-	Splits      []SplitInput `json:"splits"`
-	Date        *time.Time   `json:"date,omitempty"`
+	Description string `json:"description"`
+	Merchant    string `json:"merchant,omitempty"`
+	Category    string `json:"category,omitempty"`
+	// Set when the expense was filled in from a scanned receipt.
+	ReceiptMeta *ReceiptMetaInput `json:"receiptMeta,omitempty"`
+	Amount      int64             `json:"amount"` // minor units
+	Currency    string            `json:"currency"`
+	PaidBy      string            `json:"paidBy"`
+	Method      string            `json:"method"`
+	Splits      []SplitInput      `json:"splits"`
+	Date        *time.Time        `json:"date,omitempty"`
 }
 
 type SplitView struct {
@@ -42,17 +56,20 @@ type SplitView struct {
 }
 
 type ExpenseView struct {
-	ID          string      `json:"id"`
-	Description string      `json:"description"`
-	Amount      int64       `json:"amount"`
-	Currency    string      `json:"currency"`
-	Method      string      `json:"method"`
-	PaidBy      string      `json:"paidBy"`
-	CreatedBy   string      `json:"createdBy"`
-	Splits      []SplitView `json:"splits"`
-	Date        time.Time   `json:"date"`
-	CreatedAt   time.Time   `json:"createdAt"`
-	UpdatedAt   time.Time   `json:"updatedAt"`
+	ID          string            `json:"id"`
+	Description string            `json:"description"`
+	Merchant    string            `json:"merchant,omitempty"`
+	Category    string            `json:"category"`
+	ReceiptMeta *ReceiptMetaInput `json:"receiptMeta,omitempty"`
+	Amount      int64             `json:"amount"`
+	Currency    string            `json:"currency"`
+	Method      string            `json:"method"`
+	PaidBy      string            `json:"paidBy"`
+	CreatedBy   string            `json:"createdBy"`
+	Splits      []SplitView       `json:"splits"`
+	Date        time.Time         `json:"date"`
+	CreatedAt   time.Time         `json:"createdAt"`
+	UpdatedAt   time.Time         `json:"updatedAt"`
 }
 
 type ExpenseDetail struct {
@@ -67,12 +84,21 @@ type ExpensePage struct {
 }
 
 func view(e models.Expense) ExpenseView {
+	cat := e.Category
+	if cat == "" {
+		cat = "other" // expenses saved before categories existed
+	}
+	var rm *ReceiptMetaInput
+	if e.ReceiptMeta != nil {
+		rm = &ReceiptMetaInput{OCRConfidence: e.ReceiptMeta.OCRConfidence}
+	}
 	sv := make([]SplitView, len(e.Splits))
 	for i, s := range e.Splits {
 		sv[i] = SplitView{UserID: s.UserID.Hex(), Amount: s.Amount, Value: s.Value}
 	}
 	return ExpenseView{
-		ID: e.ID.Hex(), Description: e.Description, Amount: e.Amount, Currency: e.Currency,
+		ID: e.ID.Hex(), Description: e.Description, Merchant: e.Merchant, Category: cat, ReceiptMeta: rm,
+		Amount: e.Amount, Currency: e.Currency,
 		Method: e.Method, PaidBy: e.PaidBy.Hex(), CreatedBy: e.CreatedBy.Hex(), Splits: sv,
 		Date: e.Date, CreatedAt: e.CreatedAt, UpdatedAt: e.UpdatedAt,
 	}
@@ -101,6 +127,9 @@ func participantIDs(es ...models.Expense) []bson.ObjectID {
 type prepared struct {
 	paidBy      bson.ObjectID
 	description string
+	merchant    string
+	category    string
+	receiptMeta *models.ReceiptMeta
 	amount      int64
 	currency    string
 	method      string
@@ -114,6 +143,24 @@ func (s *Service) prepare(ctx context.Context, me bson.ObjectID, in ExpenseInput
 	p.description = strings.TrimSpace(in.Description)
 	if n := len([]rune(p.description)); n == 0 || n > 120 {
 		return p, invalid("description must be 1-120 characters")
+	}
+	p.merchant = strings.TrimSpace(in.Merchant)
+	if len([]rune(p.merchant)) > 80 {
+		return p, invalid("merchant must be at most 80 characters")
+	}
+	p.category = strings.ToLower(strings.TrimSpace(in.Category))
+	if p.category == "" {
+		p.category = "other"
+	}
+	if !categories[p.category] {
+		return p, invalid("unknown category")
+	}
+	if in.ReceiptMeta != nil {
+		c := in.ReceiptMeta.OCRConfidence
+		if c < 0 || c > 1 {
+			return p, invalid("receipt confidence must be between 0 and 1")
+		}
+		p.receiptMeta = &models.ReceiptMeta{OCRConfidence: c}
 	}
 	if in.Amount <= 0 || in.Amount > maxAmount {
 		return p, invalid("amount must be greater than zero")
@@ -202,6 +249,7 @@ func (s *Service) Create(ctx context.Context, me bson.ObjectID, key string, in E
 	now := time.Now().UTC()
 	e := models.Expense{
 		ID: bson.NewObjectID(), CreatedBy: me, PaidBy: p.paidBy, Description: p.description,
+		Merchant: p.merchant, Category: p.category, ReceiptMeta: p.receiptMeta,
 		Amount: p.amount, Currency: p.currency, Method: p.method, Splits: p.splits,
 		Date: p.date, IdempotencyKey: key, CreatedAt: now, UpdatedAt: now,
 	}
@@ -349,6 +397,7 @@ func (s *Service) Update(ctx context.Context, me, id bson.ObjectID, in ExpenseIn
 		}
 		updated = old
 		updated.PaidBy, updated.Description, updated.Amount = p.paidBy, p.description, p.amount
+		updated.Merchant, updated.Category, updated.ReceiptMeta = p.merchant, p.category, p.receiptMeta
 		updated.Currency, updated.Method, updated.Splits, updated.Date = p.currency, p.method, p.splits, p.date
 		updated.UpdatedAt = time.Now().UTC()
 		if _, err := s.expenses.ReplaceOne(ctx, bson.M{"_id": id}, updated); err != nil {
