@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { CategoryChip, CategoryTile } from "@/components/category-icon";
 import { Button } from "@/components/ui";
 import type { Expense, PublicUser } from "@/lib/api";
-import { categoryLabel } from "@/lib/categories";
 import { formatDate, formatMoney } from "@/lib/format";
 
 /**
@@ -42,16 +42,16 @@ export function ExpenseRow({
         aria-expanded={open}
         className="flex w-full items-center gap-4 text-left outline-none focus-visible:ring-2 focus-visible:ring-jade-400/40"
       >
-        {payer ? (
-          <Avatar user={iPaid ? { name: "You" } : payer} className="h-11 w-11 shrink-0 text-sm" />
-        ) : (
-          <span className="h-11 w-11 shrink-0 rounded-full bg-white/[0.07]" />
-        )}
+        <CategoryTile id={expense.category} className="h-11 w-11" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-ivory-50">{expense.description}</p>
+          <div className="flex items-center gap-2">
+            <p className="truncate text-sm font-semibold text-ivory-50">{expense.description}</p>
+            <span className="hidden shrink-0 min-[420px]:inline-flex">
+              <CategoryChip id={expense.category} />
+            </span>
+          </div>
           <p className="truncate text-xs text-ink-400">
-            {iPaid ? "You" : (payer?.name ?? "Someone")} paid {formatMoney(expense.amount, expense.currency)} ·{" "}
-            {formatDate(expense.date)} · {categoryLabel(expense.category)}
+            {iPaid ? "You" : (payer?.name ?? "Someone")} paid {formatMoney(expense.amount, expense.currency)} · {formatDate(expense.date)}
           </p>
         </div>
         <div className="text-right">
