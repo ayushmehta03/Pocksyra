@@ -6,7 +6,15 @@ import type { NextConfig } from "next";
 //
 // /auth and /me are forwarded as-is. Everything else goes under /api/* so it
 // can't collide with page routes like /dashboard/friends or /invite/[token].
-const API_URL = process.env.API_URL ?? "http://localhost:8090";
+// Tolerates common typos in the env var: surrounding quotes or spaces, a
+// missing scheme (https is assumed for any non-localhost host) and a trailing slash.
+function apiUrl(raw: string | undefined): string {
+  const v = (raw ?? "").trim().replace(/^["']|["']$/g, "").replace(/\/+$/, "");
+  if (!v) return "http://localhost:8090";
+  if (/^https?:\/\//i.test(v)) return v;
+  return `${/^(localhost|127\.0\.0\.1)/.test(v) ? "http" : "https"}://${v}`;
+}
+const API_URL = apiUrl(process.env.API_URL);
 
 const config: NextConfig = {
   async rewrites() {
