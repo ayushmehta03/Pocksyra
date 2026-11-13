@@ -16,6 +16,7 @@ import {
   type PublicUser,
   type SplitMethod,
 } from "@/lib/api";
+import { CATEGORIES } from "@/lib/categories";
 import { formatMoney } from "@/lib/format";
 import { parseBasisPoints, parseMinor } from "@/lib/money";
 import { LOW_CONFIDENCE } from "@/lib/receipt/parser";
@@ -52,6 +53,9 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
   );
   const [paidBy, setPaidBy] = useState(user?.id ?? "");
   const [method, setMethod] = useState<SplitMethod>("equal");
+  const [merchant, setMerchant] = useState("");
+  const [category, setCategory] = useState("other");
+  const [receiptConfidence, setReceiptConfidence] = useState<number | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -91,7 +95,11 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
 
   const applyScan = (r: ScanResult) => {
     const low = (f?: { confidence: number }) => !!f && f.confidence < LOW_CONFIDENCE;
-    if (r.merchant) setDescription(r.merchant.value);
+    if (r.merchant) {
+      setDescription(r.merchant.value);
+      setMerchant(r.merchant.value);
+    }
+    setReceiptConfidence(r.ocrConfidence);
     if (r.total) setAmountText(r.total.value);
     if (r.date) setDate(r.date.value);
     if (r.currency) setCurrency(r.currency);
@@ -118,6 +126,9 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
 
     const input: ExpenseInput = {
       description: description.trim(),
+      merchant: merchant.trim() || undefined,
+      category,
+      receiptMeta: receiptConfidence === null ? undefined : { ocrConfidence: receiptConfidence },
       amount: amountMinor,
       currency,
       paidBy,
@@ -189,6 +200,22 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
               setDate(e.target.value);
               edited("date");
             }}
+          />
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <SelectField label="Category" value={category} onChange={(e) => setCategory(e.target.value)}>
+            {CATEGORIES.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </SelectField>
+          <Field
+            label="Merchant (optional)"
+            placeholder="Toscana Bistro"
+            value={merchant}
+            maxLength={80}
+            onChange={(e) => setMerchant(e.target.value)}
           />
         </div>
       </div>
