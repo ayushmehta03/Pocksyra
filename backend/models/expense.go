@@ -15,6 +15,11 @@ type ExpenseSplit struct {
 	Value  int64         `bson:"value,omitempty"`
 }
 
+// ReceiptMeta records how an expense was filled in from a scanned receipt.
+type ReceiptMeta struct {
+	OCRConfidence float64 `bson:"ocrConfidence"` // 0-1, the reader's overall confidence
+}
+
 // Expense is the `expenses` collection document. Splits are embedded because
 // they are always read and written together with the expense.
 type Expense struct {
@@ -22,6 +27,9 @@ type Expense struct {
 	CreatedBy      bson.ObjectID  `bson:"createdBy"`
 	PaidBy         bson.ObjectID  `bson:"paidBy"`
 	Description    string         `bson:"description"`
+	Merchant       string         `bson:"merchant,omitempty"`
+	Category       string         `bson:"category,omitempty"`
+	ReceiptMeta    *ReceiptMeta   `bson:"receiptMeta,omitempty"`
 	Amount         int64          `bson:"amount"` // minor units
 	Currency       string         `bson:"currency"`
 	Method         string         `bson:"method"`
@@ -42,6 +50,7 @@ type Settlement struct {
 	Amount         int64         `bson:"amount"`
 	Currency       string        `bson:"currency"`
 	Note           string        `bson:"note,omitempty"`
+	Date           time.Time     `bson:"date"` // when the payment happened (defaults to creation time)
 	CreatedBy      bson.ObjectID `bson:"createdBy"`
 	IdempotencyKey string        `bson:"idempotencyKey,omitempty"`
 	CreatedAt      time.Time     `bson:"createdAt"`
