@@ -23,10 +23,15 @@ type NavItem = { label: string; href?: string; icon: typeof HomeIcon };
 const NAV: NavItem[] = [
   { label: "Overview", href: "/dashboard", icon: HomeIcon },
   { label: "Friends", href: "/dashboard/friends", icon: UsersIcon },
-  { label: "Expenses", icon: ReceiptIcon },
-  { label: "Settle up", icon: SwapIcon },
+  { label: "Expenses", href: "/dashboard/expenses", icon: ReceiptIcon },
+  { label: "Settle up", href: "/dashboard/settle", icon: SwapIcon },
   { label: "Settings", href: "/dashboard/settings", icon: SlidersIcon },
 ];
+
+function isActive(href: string | undefined, pathname: string): boolean {
+  if (!href) return false;
+  return href === "/dashboard" ? pathname === href : pathname === href || pathname.startsWith(href + "/");
+}
 
 function SideLink({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon;
@@ -80,7 +85,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
 
         <nav className="relative flex-1 space-y-1" aria-label="Main">
           {NAV.map((item) => (
-            <SideLink key={item.label} item={item} active={item.href === pathname} />
+            <SideLink key={item.label} item={item} active={isActive(item.href, pathname)} />
           ))}
         </nav>
 
@@ -124,18 +129,18 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
             if (item === "add") {
               return (
                 <li key="add" className="-mt-6">
-                  <span
-                    aria-disabled
-                    aria-label="Add expense (coming soon)"
-                    className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-b from-jade-300 to-jade-500 text-ink-950 opacity-60 shadow-[0_10px_30px_-6px_rgba(25,184,135,0.7)] ring-4 ring-ink-950"
+                  <Link
+                    href="/dashboard/expenses/new"
+                    aria-label="Add expense"
+                    className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-b from-jade-300 to-jade-500 text-ink-950 shadow-[0_10px_30px_-6px_rgba(25,184,135,0.7)] ring-4 ring-ink-950 transition active:scale-95"
                   >
                     <PlusIcon width={26} height={26} strokeWidth={2.2} />
-                  </span>
+                  </Link>
                 </li>
               );
             }
             const Icon = item.icon;
-            const active = item.href === pathname;
+            const active = isActive(item.href, pathname);
             const cls = `flex flex-col items-center gap-1 px-3 py-1.5 text-[10px] font-medium ${
               active ? "text-jade-300" : item.href ? "text-ink-300" : "text-ink-400/50"
             }`;
