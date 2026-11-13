@@ -27,6 +27,7 @@ var (
 	ErrRequestPending = errors.New("a request is already pending")
 	ErrInviteInvalid  = errors.New("invite is invalid, expired or already used")
 	ErrTooManyInvites = errors.New("too many active invites, wait for one to be used or expire")
+	ErrUnsettled      = errors.New("you still have an unsettled balance with this friend")
 )
 
 const (
@@ -39,6 +40,7 @@ type Service struct {
 	users       *mongo.Collection
 	friendships *mongo.Collection
 	invites     *mongo.Collection
+	balances    *mongo.Collection
 	cfg         config.Config
 }
 
@@ -47,6 +49,7 @@ func NewService(db *mongo.Database, cfg config.Config) *Service {
 		users:       db.Collection(database.CollUsers),
 		friendships: db.Collection(database.CollFriendships),
 		invites:     db.Collection(database.CollInvites),
+		balances:    db.Collection(database.CollBalances),
 		cfg:         cfg,
 	}
 }
@@ -272,12 +275,32 @@ func (s *Service) Decline(ctx context.Context, me, id bson.ObjectID) error {
 	return nil
 }
 
-// Remove deletes a friendship: unfriend, or cancel a request I sent.
-//
-// TODO(phase 3): once balances exist, refuse with 409 and the outstanding
-// balance when status is accepted and the pair isn't settled, unless the
-// caller passes ?force=true.
-func (s *Service) Remove(ctx context.Context, me, id bson.ObjectID) error {
+// Remove deletes a friendship: unfriend, or cancel a request I sent. An
+// accepted friendship with an unsettled balance is refused with ErrUnsettled
+// unless force is set.
+func (s *Service) Remove(ctx context.Context, me, id bson.ObjectID, force bool) error {
+	var f models.Friendship
+	err := s.friendships.FindOne(ctx, bson.M{"_id": id, "$or": participant(me)}).Decode(&f)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return ErrNotFound
+	}
+	if err != nil {
+		return err
+	}
+
+	// Don't let a friend vanish while money is still owed, unless forced.
+	if f.Status == models.FriendAccepted && !force {
+		open, err := s.balances.CountDocuments(ctx, bson.M{
+			"userLow": f.UserLow, "userHigh": f.UserHigh, "net": bson.M{"$ne": 0},
+		})
+		if err != nil {
+			return err
+		}
+		if open > 0 {
+			return ErrUnsettled
+		}
+	}
+
 	res, err := s.friendships.DeleteOne(ctx, bson.M{"_id": id, "$or": participant(me)})
 	if err != nil {
 		return err
