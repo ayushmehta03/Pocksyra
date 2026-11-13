@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -18,6 +19,9 @@ type Config struct {
 	RefreshTTL   time.Duration
 	CookieSecure bool
 	CookieDomain string
+	// Proxies whose X-Forwarded-For we trust (needed for correct client IPs in
+	// rate limiting when deployed behind Fly/Cloud Run/nginx). Empty = trust none.
+	TrustedProxies []string
 }
 
 func Load() (Config, error) {
@@ -28,6 +32,12 @@ func Load() (Config, error) {
 		MongoDB:      getenv("MONGO_DB", "pocksyra"),
 		JWTSecret:    os.Getenv("JWT_SECRET"),
 		CookieDomain: os.Getenv("COOKIE_DOMAIN"),
+	}
+
+	for _, p := range strings.Split(os.Getenv("TRUSTED_PROXIES"), ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			cfg.TrustedProxies = append(cfg.TrustedProxies, p)
+		}
 	}
 
 	var err error

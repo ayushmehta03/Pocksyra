@@ -19,8 +19,8 @@ func Setup(r *gin.Engine, d Deps) {
 
 	ag := api.Group("/auth")
 	{
-		ag.POST("/signup", d.Auth.Signup)
-		ag.POST("/login", d.Auth.Login)
+		ag.POST("/signup", d.Auth.LimitByIP(), d.Auth.Signup)
+		ag.POST("/login", d.Auth.LimitByIP(), d.Auth.Login)
 		ag.POST("/refresh", d.Auth.Refresh)
 		ag.POST("/logout", d.Auth.Logout)
 	}
@@ -28,5 +28,6 @@ func Setup(r *gin.Engine, d Deps) {
 	protected := api.Group("/", d.Auth.RequireAuth())
 	{
 		protected.GET("/me", d.Auth.Me)
+		protected.PATCH("/me", d.Auth.UpdateMe)
 	}
 }

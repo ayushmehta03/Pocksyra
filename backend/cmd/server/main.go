@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	_ "time/tzdata" // embed tz database so tz validation works in slim containers
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -49,6 +50,10 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	r := gin.New()
+	if err := r.SetTrustedProxies(cfg.TrustedProxies); err != nil {
+		log.Error("trusted proxies", "err", err)
+		os.Exit(1)
+	}
 	r.Use(gin.Logger(), gin.Recovery())
 
 	authSvc := auth.NewService(db, cfg)

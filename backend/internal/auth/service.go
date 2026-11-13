@@ -3,12 +3,15 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"github.com/ayushmehta03/Pocksyra/backend/config"
 	"github.com/ayushmehta03/Pocksyra/backend/database"
@@ -22,6 +25,7 @@ var (
 	ErrInvalidUsername    = errors.New("username must be 3-20 chars: a-z, 0-9, underscore")
 	ErrInvalidRefresh     = errors.New("invalid refresh token")
 	ErrUserNotFound       = errors.New("user not found")
+	ErrInvalidProfile     = errors.New("invalid profile field")
 )
 
 var usernameRe = regexp.MustCompile(`^[a-z0-9_]{3,20}$`)
@@ -206,4 +210,59 @@ func (s *Service) Logout(ctx context.Context, refreshToken string) error {
 
 func normalizeEmail(e string) string {
 	return strings.ToLower(strings.TrimSpace(e))
+}
+
+var currencyRe = regexp.MustCompile(`^[A-Z]{3}$`)
+
+// ProfileUpdate holds optional fields; nil means "leave unchanged".
+type ProfileUpdate struct {
+	Name            *string
+	AvatarURL       *string
+	DefaultCurrency *string
+	Timezone        *string
+}
+
+func (s *Service) UpdateProfile(ctx context.Context, id string, in ProfileUpdate) (*models.User, error) {
+	oid, err := bson.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, ErrUserNotFound
+	}
+
+	set := bson.M{}
+	if in.Name != nil {
+		set["name"] = *in.Name
+	}
+	if in.AvatarURL != nil {
+		if *in.AvatarURL != "" {
+			u, err := url.Parse(*in.AvatarURL)
+			if err != nil || u.Scheme != "https" || u.Host == "" {
+				return nil, fmt.Errorf("%w: avatarUrl must be an https URL", ErrInvalidProfile)
+			}
+		}
+		set["avatarUrl"] = *in.AvatarURL
+	}
+	if in.DefaultCurrency != nil {
+		cur := strings.ToUpper(strings.TrimSpace(*in.DefaultCurrency))
+		if !currencyRe.MatchString(cur) {
+			return nil, fmt.Errorf("%w: defaultCurrency must be a 3-letter code", ErrInvalidProfile)
+		}
+		set["defaultCurrency"] = cur
+	}
+	if in.Timezone != nil {
+		if _, err := time.LoadLocation(*in.Timezone); err != nil || *in.Timezone == "" {
+			return nil, fmt.Errorf("%w: tz must be a valid IANA zone", ErrInvalidProfile)
+		}
+		set["tz"] = *in.Timezone
+	}
+	if len(set) == 0 {
+		return s.GetUser(ctx, id)
+	}
+
+	var u models.User
+	err = s.users.FindOneAndUpdate(ctx, bson.M{"_id": oid}, bson.M{"$set": set},
+		options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&u)
+	if errors.Is(err, mongo.ErrNoDocuments) {
+		return nil, ErrUserNotFound
+	}
+	return &u, err
 }
