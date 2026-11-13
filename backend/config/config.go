@@ -28,7 +28,7 @@ func Load() (Config, error) {
 	cfg := Config{
 		Env:          getenv("APP_ENV", "development"),
 		Port:         getenv("PORT", "8080"),
-		MongoURI:     getenv("MONGO_URI", "mongodb://localhost:27017/?replicaSet=rs0"),
+		MongoURI:     getenv("MONGO_URI", "mongodb://localhost:27017/?directConnection=true"),
 		MongoDB:      getenv("MONGO_DB", "pocksyra"),
 		JWTSecret:    os.Getenv("JWT_SECRET"),
 		CookieDomain: os.Getenv("COOKIE_DOMAIN"),
