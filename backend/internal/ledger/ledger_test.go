@@ -97,3 +97,32 @@ func TestMergeIsDeterministicAndAggregates(t *testing.T) {
 		t.Fatalf("unexpected merge result %+v", ds)
 	}
 }
+
+func TestTotalsAndDiffFindDrift(t *testing.T) {
+	a, b, c := id(1), id(2), id(3)
+	expected := Totals{}
+	expected.Add("INR", ExpenseDeltas(a, []models.ExpenseSplit{{UserID: b, Amount: 500}, {UserID: c, Amount: 200}}))
+	expected.Add("INR", []Delta{SettlementDelta(b, a, 500)}) // b paid a back in full
+
+	// Stored is correct for (a,b) settled and (a,c) 200, so no drift.
+	stored := Totals{}
+	stored.Add("INR", []Delta{debt(c, a, 200)})
+	if d := Diff(stored, expected); len(d) != 0 {
+		t.Fatalf("unexpected drift: %+v", d)
+	}
+
+	// A stale non-zero row (a,b) and a wrong (a,c) are both reported, in stable order.
+	stored.Add("INR", []Delta{debt(b, a, 500)})
+	stored.Add("INR", []Delta{debt(c, a, 50)})
+	d := Diff(stored, expected)
+	if len(d) != 2 {
+		t.Fatalf("got %d drifts, want 2: %+v", len(d), d)
+	}
+	if d[0].Stored != 500 || d[0].Expected != 0 || d[1].Stored != 250 || d[1].Expected != 200 {
+		t.Fatalf("wrong drift values: %+v", d)
+	}
+	// A missing row that should be non-zero is drift too.
+	if d := Diff(Totals{}, expected); len(d) != 1 || d[0].Expected != 200 {
+		t.Fatalf("missing row not reported: %+v", d)
+	}
+}
