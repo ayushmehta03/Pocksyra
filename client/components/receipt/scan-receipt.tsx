@@ -17,6 +17,7 @@ const MAX_BYTES = 15 * 1024 * 1024;
 
 function friendly(p: ScanProgress): string {
   if (/recogniz/i.test(p.status)) return "Reading your receipt…";
+  if (/pdf/i.test(p.status)) return "Reading the PDF…";
   if (/load|initializ/i.test(p.status)) return "Getting ready (the first scan downloads ~10 MB, then it's cached)…";
   return "Preparing the photo…";
 }
@@ -40,8 +41,11 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
   const onFile = async (file: File | undefined) => {
     if (input.current) input.current.value = ""; // allow picking the same file again
     if (!file) return;
-    if (!file.type.startsWith("image/")) return setState({ kind: "error", message: "Please choose a photo." });
-    if (file.size > MAX_BYTES) return setState({ kind: "error", message: "That photo is too large (15 MB max)." });
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+    if (!isPdf && !file.type.startsWith("image/")) {
+      return setState({ kind: "error", message: "Please choose a photo or a PDF." });
+    }
+    if (file.size > MAX_BYTES) return setState({ kind: "error", message: "That file is too large (15 MB max)." });
 
     setState({ kind: "scanning", progress: { status: "preparing", progress: 0 } });
     try {
@@ -50,7 +54,7 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
       if (!result.total && !result.merchant && !result.date) {
         return setState({
           kind: "error",
-          message: "Couldn't read anything useful. Try a flatter, brighter photo with the whole receipt in frame.",
+          message: "Couldn't read anything useful. Try a flatter, brighter photo (or a clearer PDF) with the whole receipt in frame.",
         });
       }
       setState({ kind: "done", result });
@@ -76,7 +80,7 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
         <p className="text-sm font-semibold text-ivory-50">Scan a receipt</p>
         {state.kind === "idle" && (
           <p className="text-xs leading-relaxed text-ink-300">
-            Snap or choose a photo and we&apos;ll fill in the details. It&apos;s read on your device; the photo is never uploaded.
+            Choose a photo or a PDF and we&apos;ll fill in the details. It&apos;s read on your device; the file is never uploaded.
           </p>
         )}
         {scanning && (
@@ -109,14 +113,14 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
       <input
         ref={input}
         type="file"
-        accept="image/*"
+        accept="image/*,application/pdf,.pdf"
         className="sr-only"
-        aria-label="Receipt photo"
+        aria-label="Receipt photo or PDF"
         tabIndex={-1}
         onChange={(e) => void onFile(e.target.files?.[0])}
       />
       <Button type="button" variant="ghost" size="sm" loading={scanning} onClick={() => input.current?.click()}>
-        {state.kind === "done" ? "Scan another" : "Choose photo"}
+        {state.kind === "done" ? "Scan another" : "Photo or PDF"}
       </Button>
     </div>
   );
