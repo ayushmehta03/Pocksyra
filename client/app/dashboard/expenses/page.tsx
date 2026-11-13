@@ -7,7 +7,7 @@ import { CategoryIcon, categoryTone } from "@/components/category-icon";
 import { EmptyState, ListSkeleton } from "@/components/empty-state";
 import { ExpenseRow } from "@/components/expenses/expense-row";
 import { ExpenseSummary, myShare } from "@/components/expenses/expense-summary";
-import { PlusIcon, ReceiptIcon } from "@/components/icons";
+import { PlusIcon, ReceiptIcon, SparkIcon } from "@/components/icons";
 import { PageHeader } from "@/components/page-header";
 import { Button, FormError } from "@/components/ui";
 import { errorMessage, expensesApi, type Expense } from "@/lib/api";
@@ -79,12 +79,20 @@ export default function ExpensesPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <PageHeader eyebrow="Expenses" title="Everything you've split" subtitle="Newest first. Tap an expense to see who owes what." />
-        <Link href="/dashboard/expenses/new">
-          <Button size="sm">
-            <PlusIcon width={16} height={16} />
-            Add expense
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/dashboard/insights">
+            <Button size="sm" variant="ghost">
+              <SparkIcon width={16} height={16} />
+              Roast my month
+            </Button>
+          </Link>
+          <Link href="/dashboard/expenses/new">
+            <Button size="sm">
+              <PlusIcon width={16} height={16} />
+              Add expense
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <FormError message={error || actionError} />
