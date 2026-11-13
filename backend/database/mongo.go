@@ -13,6 +13,9 @@ import (
 const (
 	CollUsers    = "users"
 	CollSessions = "sessions"
+
+	CollFriendships = "friendships"
+	CollInvites     = "invites"
 )
 
 func Connect(ctx context.Context, uri string) (*mongo.Client, error) {
@@ -44,6 +47,29 @@ func EnsureIndexes(ctx context.Context, db *mongo.Database) error {
 		{Keys: bson.D{{Key: "family", Value: 1}}},
 		{Keys: bson.D{{Key: "userId", Value: 1}}},
 		// TTL: Mongo deletes the doc once expiresAt passes.
+		{Keys: bson.D{{Key: "expiresAt", Value: 1}}, Options: options.Index().SetExpireAfterSeconds(0)},
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Collection(CollFriendships).Indexes().CreateMany(ctx, []mongo.IndexModel{
+		// One document per pair, whichever direction the request went.
+		{
+			Keys:    bson.D{{Key: "userLow", Value: 1}, {Key: "userHigh", Value: 1}},
+			Options: options.Index().SetUnique(true),
+		},
+		// "all my friendships by status" from either side of the pair.
+		{Keys: bson.D{{Key: "userLow", Value: 1}, {Key: "status", Value: 1}}},
+		{Keys: bson.D{{Key: "userHigh", Value: 1}, {Key: "status", Value: 1}}},
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Collection(CollInvites).Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{Keys: bson.D{{Key: "token", Value: 1}}, Options: options.Index().SetUnique(true)},
+		{Keys: bson.D{{Key: "inviterId", Value: 1}}},
 		{Keys: bson.D{{Key: "expiresAt", Value: 1}}, Options: options.Index().SetExpireAfterSeconds(0)},
 	})
 	return err
