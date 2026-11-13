@@ -19,6 +19,8 @@ import { PageHeader } from "@/components/page-header";
 import { InstallCard } from "@/components/pwa/install-card";
 import { usePwa } from "@/components/pwa/pwa-provider";
 import { formatMoney, greeting } from "@/lib/format";
+import { useBalances } from "@/lib/use-balances";
+import { useExpenses } from "@/lib/use-expenses";
 import { useFriends } from "@/lib/use-friends";
 
 type IconType = ComponentType<SVGProps<SVGSVGElement>>;
@@ -121,17 +123,25 @@ export default function OverviewPage() {
   const { user } = useAuth();
   const { data: friendData } = useFriends();
   const { standalone } = usePwa();
+  const { data: balanceData } = useBalances();
+  const { expenses: recent, people: recentPeople, loading: recentLoading } = useExpenses({ pageSize: 5 });
   if (!user) return null; // layout guarantees a user; this narrows the type
 
   const friendCount = friendData?.friends.length ?? 0;
   const incomingCount = friendData?.incoming.length ?? 0;
 
   const cur = user.defaultCurrency;
+  // Currencies are never mixed: headline numbers use my default currency.
+  const totals = balanceData?.totals.find((t) => t.currency === cur);
+  const owe = totals?.owe ?? 0;
+  const owed = totals?.owed ?? 0;
+  const net = totals?.net ?? 0;
+  const otherCurrencies = (balanceData?.totals ?? []).filter((t) => t.currency !== cur && t.net !== 0).length;
   const steps = [
     { label: "Sign in with Google", done: true },
     { label: "Set up your profile", done: !!user.name },
     { label: "Add your first friend", done: friendCount > 0 },
-    { label: "Log your first expense", done: false },
+    { label: "Log your first expense", done: recent.length > 0 },
     { label: "Install Pocksyra on your phone", done: standalone, install: true },
   ];
   const doneCount = steps.filter((s) => s.done).length;
@@ -145,7 +155,7 @@ export default function OverviewPage() {
             {greeting()}, <span className="text-gradient">{user.name.split(" ")[0]}</span>
           </>
         }
-        subtitle="Here's where you stand with everyone. Friends and expenses are on the way."
+        subtitle="Here's where you stand with everyone."
       />
 
       {incomingCount > 0 && (
@@ -164,28 +174,58 @@ export default function OverviewPage() {
       <InstallCard />
 
       <section className="grid gap-4 md:grid-cols-3" aria-label="Balances">
-        <StatCard label="You owe" amount={formatMoney(0, cur)} note="Nothing to pay back" icon={ArrowUpRightIcon} />
-        <StatCard label="You're owed" amount={formatMoney(0, cur)} note="No one owes you yet" icon={ArrowDownLeftIcon} />
-        <StatCard label="Net balance" amount={formatMoney(0, cur)} note="All square" icon={WalletIcon} featured />
+        <StatCard label="You owe" amount={formatMoney(owe, cur)} note={owe > 0 ? "Across your friends" : "Nothing to pay back"} icon={ArrowUpRightIcon} />
+        <StatCard label="You're owed" amount={formatMoney(owed, cur)} note={owed > 0 ? "Waiting to come back" : "No one owes you yet"} icon={ArrowDownLeftIcon} />
+        <StatCard
+          label="Net balance"
+          amount={`${net > 0 ? "+" : net < 0 ? "−" : ""}${formatMoney(Math.abs(net), cur)}`}
+          note={otherCurrencies > 0 ? `Plus balances in ${otherCurrencies} other currenc${otherCurrencies > 1 ? "ies" : "y"}` : net === 0 ? "All square" : net > 0 ? "You're ahead" : "You're behind"}
+          icon={WalletIcon}
+          featured
+        />
       </section>
 
       <section className="grid gap-4 sm:grid-cols-3" aria-label="Quick actions">
-        <QuickAction icon={PlusIcon} title="Add expense" text="Split a bill" />
+        <QuickAction icon={PlusIcon} title="Add expense" text="Split a bill" href="/dashboard/expenses/new" />
         <QuickAction icon={UserPlusIcon} title="Add friend" text="By email, username or link" href="/dashboard/friends" />
         <QuickAction icon={ScanIcon} title="Scan receipt" text="Read it on-device" />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-5">
         <section className="lg:col-span-3">
-          <div className="surface flex h-full min-h-[320px] flex-col items-center justify-center p-10 text-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-jade-300 ring-1 ring-white/10">
-              <ReceiptIcon width={28} height={28} />
-            </span>
-            <h2 className="mt-6 text-xl font-semibold tracking-tight text-ivory-50">Nothing here yet</h2>
-            <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink-300">
-              Your shared expenses and settle-ups will appear here, newest first.
-            </p>
-          </div>
+          {!recentLoading && recent.length > 0 ? (
+            <div className="surface h-full">
+              <div className="flex items-baseline justify-between px-6 pt-6">
+                <h2 className="text-lg font-semibold tracking-tight text-ivory-50">Recent expenses</h2>
+                <Link href="/dashboard/expenses" className="text-xs font-medium text-jade-300 hover:underline">
+                  See all
+                </Link>
+              </div>
+              <ul className="mt-3 divide-y divide-white/[0.06]">
+                {recent.map((e) => (
+                  <li key={e.id} className="flex items-center gap-3 px-6 py-3.5">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-ivory-50">{e.description}</p>
+                      <p className="truncate text-xs text-ink-400">
+                        {e.paidBy === user.id ? "You" : (recentPeople[e.paidBy]?.name ?? "Someone")} paid
+                      </p>
+                    </div>
+                    <p className="font-mono text-sm text-ink-300">{formatMoney(e.amount, e.currency)}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <div className="surface flex h-full min-h-[320px] flex-col items-center justify-center p-10 text-center">
+              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-jade-300 ring-1 ring-white/10">
+                <ReceiptIcon width={28} height={28} />
+              </span>
+              <h2 className="mt-6 text-xl font-semibold tracking-tight text-ivory-50">Nothing here yet</h2>
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink-300">
+                Your shared expenses will appear here, newest first.
+              </p>
+            </div>
+          )}
         </section>
 
         <section className="lg:col-span-2">
