@@ -6,10 +6,12 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/ayushmehta03/Pocksyra/backend/internal/auth"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/friends"
 )
 
 type Deps struct {
-	Auth *auth.Handler
+	Auth    *auth.Handler
+	Friends *friends.Handler
 }
 
 func Setup(r *gin.Engine, d Deps) {
@@ -29,5 +31,15 @@ func Setup(r *gin.Engine, d Deps) {
 	{
 		protected.GET("/me", d.Auth.Me)
 		protected.PATCH("/me", d.Auth.UpdateMe)
+
+		protected.GET("/friends", d.Friends.List)
+		protected.POST("/friends/requests", d.Friends.SendRequest)
+		protected.POST("/friends/requests/:id/accept", d.Friends.Accept)
+		protected.POST("/friends/requests/:id/decline", d.Friends.Decline)
+		protected.DELETE("/friends/:id", d.Friends.Remove)
+
+		protected.POST("/invites", d.Friends.CreateInvite)
+		protected.GET("/invites/:token", d.Friends.PreviewInvite)
+		protected.POST("/invites/:token/accept", d.Friends.AcceptInvite)
 	}
 }
