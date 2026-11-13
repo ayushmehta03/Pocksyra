@@ -11,6 +11,8 @@ export type ReceiptItem = { name: string; amount: string };
 
 export type ParsedReceipt = {
   merchant?: Field<string>;
+  /** a suggested expense category (only ever set by the AI fallback) */
+  category?: Field<string>;
   /** yyyy-mm-dd */
   date?: Field<string>;
   /** plain decimal text like "1234.50", ready for the amount input */
@@ -42,7 +44,7 @@ export function normalizeAmount(raw: string): string | null {
   return `${whole.replace(/^0+(?=\d)/, "")}.${m[2]}`;
 }
 
-function amountsIn(text: string): string[] {
+export function amountsIn(text: string): string[] {
   const out: string[] = [];
   for (const m of text.matchAll(AMOUNT_RE)) {
     const a = normalizeAmount(m[1]!);
