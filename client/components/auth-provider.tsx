@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { api, type ProfileUpdate, type User } from "@/lib/api";
+import { ApiError, api, type ProfileUpdate, type User } from "@/lib/api";
+import { clearCachedUser, readCachedUser, writeCachedUser } from "@/lib/session-cache";
 
 type AuthContextValue = {
   user: User | null;
@@ -24,8 +25,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     api
       .me()
-      .then((r) => !cancelled && setUser(r.user))
-      .catch(() => !cancelled && setUser(null))
+      .then((r) => {
+        if (cancelled) return;
+        writeCachedUser(r.user);
+        setUser(r.user);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        // Only a definitive 401 means "signed out". Offline or a server hiccup
+        // keeps the cached profile so the installed app still opens.
+        if (err instanceof ApiError && err.status === 401) {
+          clearCachedUser();
+          setUser(null);
+        } else {
+          setUser(readCachedUser());
+        }
+      })
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
@@ -36,12 +51,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await api.logout();
     } finally {
+      clearCachedUser();
       setUser(null);
     }
   }, []);
 
   const updateProfile = useCallback(async (patch: ProfileUpdate) => {
     const r = await api.updateMe(patch);
+    writeCachedUser(r.user);
     setUser(r.user);
   }, []);
 
