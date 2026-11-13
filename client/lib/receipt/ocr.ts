@@ -1,4 +1,11 @@
-import { parseReceipt, type OcrLine, type ParsedReceipt } from "./parser";
+import { guessCategory } from "./category";
+import { parseReceipt as parseRaw, type OcrLine, type ParsedReceipt } from "./parser";
+
+/** Rule-based parse plus a keyword-based category guess. */
+function parseReceipt(input: OcrLine[]): ParsedReceipt {
+  const r = parseRaw(input);
+  return { ...r, category: r.category ?? guessCategory(r.rawText) };
+}
 import { isPdf, readPdfText, renderPdfPages } from "./pdf";
 import { preprocessImage } from "./preprocess";
 

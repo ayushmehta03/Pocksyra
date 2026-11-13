@@ -117,7 +117,8 @@ export function mergeFallback(primary: ParsedReceipt, llm: LlmReceipt): ParsedRe
     merchant: pick(primary.merchant, llm.merchant),
     date: pick(primary.date, llm.date),
     total: pick(primary.total, llm.total),
-    category: llm.category ?? primary.category,
+    // a vague "other" from the model must not override a keyword match
+    category: llm.category && !(llm.category.value === "other" && primary.category) ? llm.category : primary.category,
     items: primary.items.length > 0 ? primary.items : llm.items,
   };
 }
