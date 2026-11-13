@@ -14,7 +14,7 @@ import {
   SwapIcon,
   UsersIcon,
 } from "@/components/icons";
-import { initials } from "@/lib/format";
+import { Avatar } from "@/components/avatar";
 import type { User } from "@/lib/api";
 
 type NavItem = { label: string; href?: string; icon: typeof HomeIcon };
@@ -85,9 +85,7 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
 
         <div className="relative rounded-2xl border border-white/10 bg-white/[0.04] p-3.5">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-gold-300 to-gold-500 text-sm font-bold text-ink-950">
-              {initials(user.name)}
-            </span>
+            <Avatar user={user} className="h-10 w-10 shrink-0 text-sm" />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{user.name}</p>
               <p className="truncate text-xs text-ink-400">@{user.username}</p>
@@ -109,9 +107,9 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
         <button
           onClick={onLogout}
           aria-label="Log out"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-ink-900 text-xs font-bold text-gold-300"
+          className="rounded-full"
         >
-          {initials(user.name)}
+          <Avatar user={user} className="h-9 w-9 text-xs" />
         </button>
       </header>
 

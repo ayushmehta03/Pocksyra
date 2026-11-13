@@ -5,7 +5,8 @@ import { useAuth } from "@/components/auth-provider";
 import { PageHeader } from "@/components/page-header";
 import { Button, Field, FormError, SelectField } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
-import { formatDate, initials } from "@/lib/format";
+import { Avatar } from "@/components/avatar";
+import { formatDate } from "@/lib/format";
 
 const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "AUD", "CAD", "JPY"];
 
@@ -104,9 +105,7 @@ export default function SettingsPage() {
           <div className="grain relative overflow-hidden rounded-3xl bg-ink-950 p-6 text-ivory-50">
             <div className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-jade-600/40 blur-[70px]" />
             <div className="relative flex items-center gap-4">
-              <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-gold-300 to-gold-500 text-lg font-bold text-ink-950">
-                {initials(user.name)}
-              </span>
+              <Avatar user={user} className="h-14 w-14 text-lg" />
               <div className="min-w-0">
                 <p className="truncate font-display text-2xl">{user.name}</p>
                 <p className="truncate text-sm text-ink-300">@{user.username}</p>

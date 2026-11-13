@@ -1,14 +1,12 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { api, type ProfileUpdate, type SignupInput, type User } from "@/lib/api";
+import { api, type ProfileUpdate, type User } from "@/lib/api";
 
 type AuthContextValue = {
   user: User | null;
   /** true until the first /me check finishes */
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (input: SignupInput) => Promise<void>;
   logout: () => Promise<void>;
   updateProfile: (patch: ProfileUpdate) => Promise<void>;
 };
@@ -19,8 +17,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Restore the session on load. api.me() transparently refreshes an expired
-  // access token using the refresh cookie.
+  // Restore the session on load. Sign-in itself happens through a full-page
+  // redirect to Google, so by the time we're back the cookies are already set.
+  // api.me() transparently refreshes an expired access token.
   useEffect(() => {
     let cancelled = false;
     api
@@ -31,16 +30,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, []);
-
-  const login = useCallback(async (email: string, password: string) => {
-    const r = await api.login(email, password);
-    setUser(r.user);
-  }, []);
-
-  const signup = useCallback(async (input: SignupInput) => {
-    const r = await api.signup(input);
-    setUser(r.user);
   }, []);
 
   const logout = useCallback(async () => {
@@ -57,8 +46,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, login, signup, logout, updateProfile }),
-    [user, loading, login, signup, logout, updateProfile],
+    () => ({ user, loading, logout, updateProfile }),
+    [user, loading, logout, updateProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

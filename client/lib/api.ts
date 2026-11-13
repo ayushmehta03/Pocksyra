@@ -13,13 +13,6 @@ export type User = {
   createdAt: string;
 };
 
-export type SignupInput = {
-  email: string;
-  username: string;
-  name: string;
-  password: string;
-};
-
 export type ProfileUpdate = Partial<{
   name: string;
   avatarUrl: string;
@@ -92,13 +85,6 @@ export const api = {
   me: () => request<{ user: User }>("/me"),
   updateMe: (patch: ProfileUpdate) =>
     request<{ user: User }>("/me", { method: "PATCH", body: JSON.stringify(patch) }),
-  login: (email: string, password: string) =>
-    request<{ user: User }>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    }),
-  signup: (input: SignupInput) =>
-    request<{ user: User }>("/auth/signup", { method: "POST", body: JSON.stringify(input) }),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
 };
 
