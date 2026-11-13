@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { AddFriendForm } from "@/components/friends/add-friend-form";
 import { FriendsPanel } from "@/components/friends/friends-panel";
+import { InviteCard } from "@/components/friends/invite-card";
 import { ListSkeleton } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { FormError } from "@/components/ui";
@@ -29,6 +31,15 @@ export default function FriendsPage() {
         title="Your people"
         subtitle="The friends you split expenses with."
       />
+
+      <section className="grid gap-4 lg:grid-cols-5" aria-label="Add friends">
+        <div className="lg:col-span-3">
+          <AddFriendForm onSent={reload} />
+        </div>
+        <div className="lg:col-span-2">
+          <InviteCard />
+        </div>
+      </section>
 
       <FormError message={actionError || error} />
 
