@@ -68,13 +68,15 @@ export function SelectField({
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   loading?: boolean;
   arrow?: boolean;
-  variant?: "primary" | "ghost" | "light";
+  variant?: "primary" | "ghost" | "light" | "danger";
+  size?: "md" | "sm";
 };
 
 export function Button({
   loading,
   arrow,
   variant = "primary",
+  size = "md",
   className = "",
   children,
   disabled,
@@ -87,11 +89,14 @@ export function Button({
       "border border-white/10 bg-white/[0.04] text-ivory-100 hover:bg-white/[0.08] focus-visible:ring-white/20",
     light:
       "bg-white text-ink-900 hover:bg-ivory-100 shadow-[0_10px_30px_-12px_rgba(255,255,255,0.35)] focus-visible:ring-white/30",
+    danger:
+      "border border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 focus-visible:ring-red-400/30",
   }[variant];
+  const sizing = { md: "px-5 py-3 text-sm", sm: "px-3.5 py-2 text-xs" }[size];
   return (
     <button
       disabled={disabled || loading}
-      className={`group inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold outline-none transition focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-50 ${styles} ${className}`}
+      className={`group inline-flex items-center justify-center gap-2 rounded-xl font-semibold outline-none transition focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-50 ${sizing} ${styles} ${className}`}
       {...props}
     >
       {loading && (
