@@ -7,8 +7,8 @@ import { InviteCard } from "@/components/friends/invite-card";
 import { RequestsPanel } from "@/components/friends/requests-panel";
 import { ListSkeleton } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
-import { FormError } from "@/components/ui";
-import { errorMessage, friendsApi } from "@/lib/api";
+import { Button, FormError } from "@/components/ui";
+import { ApiError, errorMessage, friendsApi } from "@/lib/api";
 import { useFriends } from "@/lib/use-friends";
 
 type Tab = "friends" | "requests";
@@ -17,6 +17,8 @@ export default function FriendsPage() {
   const { data, loading, error, reload } = useFriends();
   const [tab, setTab] = useState<Tab>("friends");
   const [actionError, setActionError] = useState("");
+  // Set when unfriending was refused because money is still owed.
+  const [forceId, setForceId] = useState<string | null>(null);
 
   // Run an action, then refresh. Errors show in the banner instead of throwing.
   async function run(action: () => Promise<unknown>) {
@@ -26,6 +28,23 @@ export default function FriendsPage() {
       await reload();
     } catch (err) {
       setActionError(errorMessage(err));
+    }
+  }
+
+  // Unfriending with an open balance is refused (409); offer to override explicitly.
+  async function removeFriend(id: string) {
+    setActionError("");
+    setForceId(null);
+    try {
+      await friendsApi.remove(id);
+      await reload();
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 409) {
+        setForceId(id);
+        setActionError("You still have an unsettled balance with this friend. Settle up first, or remove them anyway.");
+      } else {
+        setActionError(errorMessage(err));
+      }
     }
   }
 
@@ -82,12 +101,30 @@ export default function FriendsPage() {
       </div>
 
       <FormError message={actionError || error} />
+      {forceId && (
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="danger"
+            onClick={() => {
+              const id = forceId;
+              setForceId(null);
+              run(() => friendsApi.remove(id, true));
+            }}
+          >
+            Remove anyway
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setForceId(null)}>
+            Keep friend
+          </Button>
+        </div>
+      )}
 
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {loading && !data ? (
           <ListSkeleton />
         ) : tab === "friends" ? (
-          <FriendsPanel friends={friends} onRemove={(id) => run(() => friendsApi.remove(id))} />
+          <FriendsPanel friends={friends} onRemove={removeFriend} />
         ) : (
           <RequestsPanel
             incoming={incoming}
