@@ -1,5 +1,89 @@
 @import "tailwindcss";
 
+@theme {
+  /* Deep forest "ink" for dark surfaces */
+  --color-ink-950: #06100d;
+  --color-ink-900: #0a1a15;
+  --color-ink-800: #0f2620;
+  --color-ink-700: #17352c;
+  --color-ink-600: #234a3d;
+  --color-ink-500: #4d6159;
+  --color-ink-400: #7b8d85;
+  --color-ink-300: #a9b7b0;
+
+  --color-jade-300: #7ce6c0;
+  --color-jade-400: #3fd6a3;
+  --color-jade-500: #19b887;
+  --color-jade-600: #0f9a70;
+  --color-jade-700: #0c7a58;
+
+  --color-gold-200: #f1e2b8;
+  --color-gold-300: #e6cf94;
+  --color-gold-400: #d4b25f;
+  --color-gold-500: #b8923c;
+
+  /* Warm ivory for light surfaces */
+  --color-paper: #fffdf8;
+  --color-ivory-50: #fdfcf8;
+  --color-ivory-100: #faf8f1;
+  --color-ivory-200: #f2eee2;
+  --color-ivory-300: #e6e0cf;
+  --color-ivory-400: #cfc7b0;
+
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-float-slow: float 13s ease-in-out infinite reverse;
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-aurora: aurora 18s ease-in-out infinite alternate;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+    50% { transform: translateY(-14px) rotate(var(--r, 0deg)); }
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes aurora {
+    0% { transform: translate3d(0, 0, 0) scale(1); }
+    100% { transform: translate3d(6%, -5%, 0) scale(1.18); }
+  }
+}
+
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+}
+
+::selection {
+  background: var(--color-jade-400);
+  color: var(--color-ink-950);
+}
+
+/* Film grain over dark surfaces for depth */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Subtle engraved grid for the hero */
+.grid-lines {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse at 30% 40%, black 30%, transparent 75%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

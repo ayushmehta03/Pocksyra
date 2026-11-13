@@ -44,11 +44,11 @@ export default function LoginPage() {
   return (
     <AuthShell
       title="Welcome back"
-      subtitle="Log in to see what you owe and what you're owed."
+      subtitle="Log in to see who owes what, at a glance."
       footer={
         <>
           New to Pocksyra?{" "}
-          <Link href="/signup" className="font-medium text-emerald-700 hover:underline">
+          <Link href="/signup" className="font-medium text-jade-700 underline-offset-4 hover:underline">
             Create an account
           </Link>
         </>
@@ -72,7 +72,7 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
         />
-        <Button type="submit" loading={submitting} className="w-full">
+        <Button type="submit" loading={submitting} arrow className="w-full">
           Log in
         </Button>
       </form>

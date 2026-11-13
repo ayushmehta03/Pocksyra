@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { AuthShell } from "@/components/auth-shell";
-import { Button, Field, FormError, PasswordField, Spinner } from "@/components/ui";
+import { Button, Field, FormError, PasswordField, PasswordStrength, Spinner } from "@/components/ui";
 import { ApiError, errorMessage } from "@/lib/api";
 import { validateSignup, type FieldErrors } from "@/lib/validation";
 
@@ -59,7 +59,7 @@ export default function SignupPage() {
       footer={
         <>
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-emerald-700 hover:underline">
+          <Link href="/login" className="font-medium text-jade-700 underline-offset-4 hover:underline">
             Log in
           </Link>
         </>
@@ -99,9 +99,10 @@ export default function SignupPage() {
           value={form.password}
           onChange={set("password")}
           error={errors.password}
-          hint="At least 8 characters."
+          hint={form.password ? undefined : "At least 8 characters."}
         />
-        <Button type="submit" loading={submitting} className="w-full">
+        <PasswordStrength password={form.password} />
+        <Button type="submit" loading={submitting} arrow className="w-full">
           Create account
         </Button>
       </form>
