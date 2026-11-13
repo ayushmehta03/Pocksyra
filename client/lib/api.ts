@@ -20,6 +20,34 @@ export type ProfileUpdate = Partial<{
   tz: string;
 }>;
 
+/** What other people are allowed to see about a user. */
+export type PublicUser = {
+  id: string;
+  name: string;
+  username: string;
+  avatarUrl?: string;
+};
+
+export type FriendEntry = {
+  /** friendship id: used to accept / decline / remove */
+  id: string;
+  status: "pending" | "accepted";
+  friend: PublicUser;
+  createdAt: string;
+  acceptedAt?: string;
+};
+
+export type FriendList = {
+  friends: FriendEntry[];
+  /** requests waiting for my answer */
+  incoming: FriendEntry[];
+  /** requests I sent */
+  outgoing: FriendEntry[];
+};
+
+export type InviteLink = { token: string; url: string; expiresAt: string };
+export type InvitePreview = { inviter: PublicUser; expiresAt: string; own: boolean };
+
 export class ApiError extends Error {
   status: number;
   retryAfter?: number;
@@ -86,6 +114,28 @@ export const api = {
   updateMe: (patch: ProfileUpdate) =>
     request<{ user: User }>("/me", { method: "PATCH", body: JSON.stringify(patch) }),
   logout: () => request<void>("/auth/logout", { method: "POST" }),
+};
+
+export const friendsApi = {
+  list: () => request<FriendList>("/api/friends"),
+  sendRequest: (target: { email?: string; username?: string }) =>
+    request<{ friendship: FriendEntry; autoAccepted: boolean }>("/api/friends/requests", {
+      method: "POST",
+      body: JSON.stringify(target),
+    }),
+  accept: (id: string) =>
+    request<{ friendship: FriendEntry }>(`/api/friends/requests/${id}/accept`, { method: "POST" }),
+  decline: (id: string) => request<void>(`/api/friends/requests/${id}/decline`, { method: "POST" }),
+  /** unfriend, or cancel a request I sent */
+  remove: (id: string) => request<void>(`/api/friends/${id}`, { method: "DELETE" }),
+
+  createInvite: () => request<InviteLink>("/api/invites", { method: "POST" }),
+  previewInvite: (token: string) =>
+    request<InvitePreview>(`/api/invites/${encodeURIComponent(token)}`),
+  acceptInvite: (token: string) =>
+    request<{ friendship: FriendEntry }>(`/api/invites/${encodeURIComponent(token)}/accept`, {
+      method: "POST",
+    }),
 };
 
 /** Human-friendly message for any thrown error, including rate limits. */
