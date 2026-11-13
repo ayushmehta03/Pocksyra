@@ -1,6 +1,12 @@
 "use client";
 
-import { useId, useState, type ButtonHTMLAttributes, type InputHTMLAttributes } from "react";
+import {
+  useId,
+  useState,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type SelectHTMLAttributes,
+} from "react";
 import { ArrowRightIcon } from "@/components/icons";
 
 const inputBase =
@@ -66,6 +72,25 @@ export function PasswordField({ label, error, hint, ...props }: FieldProps) {
         </button>
       </div>
       <Message id={id} error={error} hint={hint} />
+    </div>
+  );
+}
+
+export function SelectField({
+  label,
+  className = "",
+  children,
+  ...props
+}: SelectHTMLAttributes<HTMLSelectElement> & { label: string }) {
+  const id = useId();
+  return (
+    <div className="space-y-2">
+      <label htmlFor={id} className="block text-[13px] font-medium tracking-wide text-ink-700">
+        {label}
+      </label>
+      <select id={id} className={`${inputBase} border-ivory-300 ${className}`} {...props}>
+        {children}
+      </select>
     </div>
   );
 }
