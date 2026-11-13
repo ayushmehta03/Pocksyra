@@ -22,7 +22,7 @@ type NavItem = { label: string; href?: string; icon: typeof HomeIcon };
 // Items without an href are on the roadmap and render as "Soon".
 const NAV: NavItem[] = [
   { label: "Overview", href: "/dashboard", icon: HomeIcon },
-  { label: "Friends", icon: UsersIcon },
+  { label: "Friends", href: "/dashboard/friends", icon: UsersIcon },
   { label: "Expenses", icon: ReceiptIcon },
   { label: "Settle up", icon: SwapIcon },
   { label: "Settings", href: "/dashboard/settings", icon: SlidersIcon },
