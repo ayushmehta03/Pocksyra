@@ -1,9 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import type { ComponentType, SVGProps } from "react";
 import { useAuth } from "@/components/auth-provider";
 import {
   ArrowDownLeftIcon,
+  ArrowRightIcon,
   ArrowUpRightIcon,
   CheckIcon,
   DownloadIcon,
@@ -15,6 +17,7 @@ import {
 } from "@/components/icons";
 import { PageHeader } from "@/components/page-header";
 import { formatMoney, greeting } from "@/lib/format";
+import { useFriends } from "@/lib/use-friends";
 
 type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -65,12 +68,19 @@ function StatCard({
   );
 }
 
-function QuickAction({ icon: Icon, title, text }: { icon: IconType; title: string; text: string }) {
-  return (
-    <div
-      aria-disabled
-      className="surface group relative flex cursor-not-allowed items-center gap-4 p-4 opacity-70 transition hover:opacity-90"
-    >
+function QuickAction({
+  icon: Icon,
+  title,
+  text,
+  href,
+}: {
+  icon: IconType;
+  title: string;
+  text: string;
+  href?: string;
+}) {
+  const body = (
+    <>
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/20 to-gold-400/10 text-jade-300 ring-1 ring-white/10">
         <Icon width={20} height={20} />
       </span>
@@ -78,22 +88,46 @@ function QuickAction({ icon: Icon, title, text }: { icon: IconType; title: strin
         <p className="text-sm font-semibold text-ivory-50">{title}</p>
         <p className="truncate text-xs text-ink-400">{text}</p>
       </div>
-      <span className="ml-auto rounded-full border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-ink-400">
-        Soon
-      </span>
+      {href ? (
+        <ArrowRightIcon width={16} height={16} className="ml-auto text-ink-400 transition group-hover:translate-x-0.5 group-hover:text-jade-300" />
+      ) : (
+        <span className="ml-auto rounded-full border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-ink-400">
+          Soon
+        </span>
+      )}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="surface group relative flex items-center gap-4 p-4 outline-none transition hover:ring-1 hover:ring-jade-400/30 focus-visible:ring-2 focus-visible:ring-jade-400/50"
+      >
+        {body}
+      </Link>
+    );
+  }
+  return (
+    <div aria-disabled className="surface group relative flex cursor-not-allowed items-center gap-4 p-4 opacity-70">
+      {body}
     </div>
   );
 }
 
 export default function OverviewPage() {
   const { user } = useAuth();
+  const { data: friendData } = useFriends();
   if (!user) return null; // layout guarantees a user; this narrows the type
+
+  const friendCount = friendData?.friends.length ?? 0;
+  const incomingCount = friendData?.incoming.length ?? 0;
 
   const cur = user.defaultCurrency;
   const steps = [
     { label: "Sign in with Google", done: true },
     { label: "Set up your profile", done: !!user.name },
-    { label: "Add your first friend", done: false },
+    { label: "Add your first friend", done: friendCount > 0 },
     { label: "Log your first expense", done: false },
     { label: "Install Pocksyra on your phone", done: false, install: true },
   ];
@@ -111,6 +145,19 @@ export default function OverviewPage() {
         subtitle="Here's where you stand with everyone. Friends and expenses are on the way."
       />
 
+      {incomingCount > 0 && (
+        <Link
+          href="/dashboard/friends"
+          className="surface group flex items-center gap-3 px-5 py-4 text-sm text-ivory-100 outline-none ring-1 ring-jade-400/25 transition hover:ring-jade-400/50"
+        >
+          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-jade-400 px-2 font-mono text-xs font-bold text-ink-950">
+            {incomingCount}
+          </span>
+          {incomingCount === 1 ? "friend request is" : "friend requests are"} waiting for you
+          <ArrowRightIcon width={16} height={16} className="ml-auto text-jade-300 transition group-hover:translate-x-0.5" />
+        </Link>
+      )}
+
       <section className="grid gap-4 md:grid-cols-3" aria-label="Balances">
         <StatCard label="You owe" amount={formatMoney(0, cur)} note="Nothing to pay back" icon={ArrowUpRightIcon} />
         <StatCard label="You're owed" amount={formatMoney(0, cur)} note="No one owes you yet" icon={ArrowDownLeftIcon} />
@@ -119,7 +166,7 @@ export default function OverviewPage() {
 
       <section className="grid gap-4 sm:grid-cols-3" aria-label="Quick actions">
         <QuickAction icon={PlusIcon} title="Add expense" text="Split a bill" />
-        <QuickAction icon={UserPlusIcon} title="Add friend" text="By email or link" />
+        <QuickAction icon={UserPlusIcon} title="Add friend" text="By email, username or link" href="/dashboard/friends" />
         <QuickAction icon={ScanIcon} title="Scan receipt" text="Read it on-device" />
       </section>
 
