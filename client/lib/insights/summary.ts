@@ -26,6 +26,12 @@ export type Summary = {
   splitCount: number;
   /** expenses in other currencies that were left out */
   skipped: number;
+  /** how many different days had at least one expense */
+  activeDays: number;
+  /** too little data to say anything about habits */
+  thin: boolean;
+  /** enough data for "busiest weekday" to mean something */
+  weekdayReliable: boolean;
 };
 
 const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -91,6 +97,7 @@ export function buildSummary(expenses: Expense[], me: string, days = 30, now = n
     if (e.splits.length === 1) solo++;
   }
 
+  const activeDays = new Set(rows.map((e) => new Date(e.date).toDateString())).size;
   const busiest = wd.reduce((best, v, i) => (v > wd[best]! ? i : best), 0);
 
   return {
@@ -112,5 +119,8 @@ export function buildSummary(expenses: Expense[], me: string, days = 30, now = n
     soloCount: solo,
     splitCount: rows.length - solo,
     skipped: inWindow.length - rows.length,
+    activeDays,
+    thin: rows.length < 3 || activeDays < 3,
+    weekdayReliable: rows.length >= 8 && activeDays >= 5,
   };
 }
