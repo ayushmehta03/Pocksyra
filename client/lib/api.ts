@@ -151,6 +151,10 @@ export type SplitInput = {
 
 export type ExpenseInput = {
   description: string;
+  merchant?: string;
+  category?: string;
+  /** set when the expense was filled in from a scanned receipt */
+  receiptMeta?: { ocrConfidence: number };
   amount: number; // minor units
   currency: string;
   paidBy: string;
@@ -162,6 +166,9 @@ export type ExpenseInput = {
 export type Expense = {
   id: string;
   description: string;
+  merchant?: string;
+  category: string;
+  receiptMeta?: { ocrConfidence: number };
   amount: number;
   currency: string;
   method: SplitMethod;
@@ -197,6 +204,7 @@ export type SettlementInput = {
   amount: number;
   currency: string;
   note?: string;
+  date?: string; // ISO; defaults to now on the server
 };
 
 export type Settlement = {
@@ -206,6 +214,7 @@ export type Settlement = {
   amount: number;
   currency: string;
   note?: string;
+  date: string;
   createdAt: string;
 };
 
