@@ -31,6 +31,7 @@ export function ExpenseRow({
   // Positive: others owe me for this bill. Negative: I owe the payer.
   const effect = iPaid ? expense.amount - myShare : -myShare;
   const canDelete = expense.createdBy === meId;
+  const personal = iPaid && expense.splits.length === 1 && expense.splits[0]!.userId === meId;
 
   return (
     <li className="px-5 py-4">
@@ -54,10 +55,10 @@ export function ExpenseRow({
         </div>
         <div className="text-right">
           <p className="text-[10px] uppercase tracking-wider text-ink-400">
-            {effect > 0 ? "you lent" : effect < 0 ? "you owe" : "not involved"}
+            {personal ? "just you" : effect > 0 ? "you lent" : effect < 0 ? "you owe" : "not involved"}
           </p>
           <p className={`font-mono text-sm font-medium ${effect > 0 ? "text-jade-300" : effect < 0 ? "text-gold-400" : "text-ink-400"}`}>
-            {effect === 0 ? "—" : formatMoney(Math.abs(effect), expense.currency)}
+            {personal ? formatMoney(expense.amount, expense.currency) : effect === 0 ? "—" : formatMoney(Math.abs(effect), expense.currency)}
           </p>
         </div>
       </button>
