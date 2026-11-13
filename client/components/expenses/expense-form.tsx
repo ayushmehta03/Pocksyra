@@ -100,6 +100,7 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
       setMerchant(r.merchant.value);
     }
     setReceiptConfidence(r.ocrConfidence);
+    if (r.category && CATEGORIES.some((c) => c.id === r.category!.value)) setCategory(r.category.value);
     if (r.total) setAmountText(r.total.value);
     if (r.date) setDate(r.date.value);
     if (r.currency) setCurrency(r.currency);
