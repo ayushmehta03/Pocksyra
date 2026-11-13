@@ -1,13 +1,35 @@
 // On-device language model via WebLLM (WebGPU). Everything runs in the
 // browser: nothing about your spending is ever sent to a server.
 
+const FULL = { id: "Qwen2.5-1.5B-Instruct-q4f16_1-MLC", label: "about 1.1 GB" };
+const LITE = { id: "Qwen2.5-0.5B-Instruct-q4f16_1-MLC", label: "about 400 MB" };
+
 /**
- * One model for everything. Qwen2.5-1.5B is small enough (~1.1 GB, cached after
- * the first download) for most laptops and recent phones, and follows JSON
- * instructions well. Swap the id here to try another prebuilt WebLLM model.
+ * Low-memory devices (phones, or machines reporting 4 GB or less) get the
+ * 0.5B model; everything else gets 1.5B, which reads receipts and writes
+ * better. Edit the thresholds here. `deviceMemory` exists only in Chrome and
+ * Edge, so other browsers fall back to the phone and CPU-core checks.
  */
-export const MODEL_ID = "Qwen2.5-1.5B-Instruct-q4f16_1-MLC";
-export const MODEL_DOWNLOAD_LABEL = "about 1.1 GB";
+export function isLowMemoryDevice(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const nav = navigator as Navigator & { deviceMemory?: number };
+  if (nav.deviceMemory !== undefined && nav.deviceMemory <= 4) return true;
+  if (/android|iphone|ipad|ipod|mobile/i.test(nav.userAgent)) return true;
+  return (nav.hardwareConcurrency ?? 8) <= 4;
+}
+
+/** Add `?model=full` or `?model=lite` to the page URL to force one while testing. */
+function forcedModel(): typeof FULL | undefined {
+  if (typeof location === "undefined") return undefined;
+  const m = new URLSearchParams(location.search).get("model");
+  return m === "full" ? FULL : m === "lite" ? LITE : undefined;
+}
+
+const model = () => forcedModel() ?? (isLowMemoryDevice() ? LITE : FULL);
+
+export const modelId = () => model().id;
+/** Download size to show the user, e.g. "about 1.1 GB". */
+export const modelDownloadLabel = () => model().label;
 
 export type LlmProgress = { text: string; progress: number };
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
@@ -42,7 +64,7 @@ export function webGpuAvailable(): boolean {
 export async function modelCached(): Promise<boolean> {
   try {
     const { hasModelInCache } = await import("@mlc-ai/web-llm");
-    return await hasModelInCache(MODEL_ID);
+    return await hasModelInCache(modelId());
   } catch {
     return false;
   }
@@ -58,7 +80,7 @@ export function getEngine(progress?: (p: LlmProgress) => void): Promise<Engine> 
       void navigator.storage?.persist?.();
       const { CreateWebWorkerMLCEngine } = await import("@mlc-ai/web-llm");
       const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
-      return (await CreateWebWorkerMLCEngine(worker, MODEL_ID, {
+      return (await CreateWebWorkerMLCEngine(worker, modelId(), {
         initProgressCallback: (r: { text: string; progress: number }) =>
           onProgress?.({ text: r.text, progress: r.progress }),
       })) as unknown as Engine;

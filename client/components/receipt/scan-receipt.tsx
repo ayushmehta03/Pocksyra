@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ScanIcon } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { formatDate } from "@/lib/format";
+import { modelDownloadLabel } from "@/lib/llm/engine";
 import { LOW_CONFIDENCE } from "@/lib/receipt/parser";
 import type { ScanProgress, ScanResult } from "@/lib/receipt/ocr";
 
@@ -183,7 +184,7 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
           {ai.kind === "offer" && (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <p className="flex-1">
-                Some fields couldn&apos;t be read. An on-device AI can try again. It downloads once (about 1.1 GB), then works offline, and your receipt never leaves this device.
+                Some fields couldn&apos;t be read. An on-device AI can try again. It downloads once ({modelDownloadLabel()}), then works offline, and your receipt never leaves this device.
               </p>
               <Button type="button" size="sm" onClick={() => void runAi(ai.result)}>
                 Use on-device AI
