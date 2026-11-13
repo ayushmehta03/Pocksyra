@@ -16,6 +16,8 @@ import {
   WalletIcon,
 } from "@/components/icons";
 import { PageHeader } from "@/components/page-header";
+import { InstallCard } from "@/components/pwa/install-card";
+import { usePwa } from "@/components/pwa/pwa-provider";
 import { formatMoney, greeting } from "@/lib/format";
 import { useFriends } from "@/lib/use-friends";
 
@@ -118,6 +120,7 @@ function QuickAction({
 export default function OverviewPage() {
   const { user } = useAuth();
   const { data: friendData } = useFriends();
+  const { standalone } = usePwa();
   if (!user) return null; // layout guarantees a user; this narrows the type
 
   const friendCount = friendData?.friends.length ?? 0;
@@ -129,7 +132,7 @@ export default function OverviewPage() {
     { label: "Set up your profile", done: !!user.name },
     { label: "Add your first friend", done: friendCount > 0 },
     { label: "Log your first expense", done: false },
-    { label: "Install Pocksyra on your phone", done: false, install: true },
+    { label: "Install Pocksyra on your phone", done: standalone, install: true },
   ];
   const doneCount = steps.filter((s) => s.done).length;
 
@@ -157,6 +160,8 @@ export default function OverviewPage() {
           <ArrowRightIcon width={16} height={16} className="ml-auto text-jade-300 transition group-hover:translate-x-0.5" />
         </Link>
       )}
+
+      <InstallCard />
 
       <section className="grid gap-4 md:grid-cols-3" aria-label="Balances">
         <StatCard label="You owe" amount={formatMoney(0, cur)} note="Nothing to pay back" icon={ArrowUpRightIcon} />
