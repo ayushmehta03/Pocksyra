@@ -99,7 +99,6 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
     setError("");
     if (!description.trim()) return setError("What was this for?");
     if (!amountMinor) return setError("Enter a valid amount.");
-    if (selected.size === 0) return setError("Pick at least one friend to split with.");
     if (!rows || !result || !result.ok) return setError(splitError || "Check the split.");
 
     const input: ExpenseInput = {
@@ -159,16 +158,19 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
       </div>
 
       <section className="surface space-y-4 p-6" aria-label="Who is sharing">
-        <h2 className="text-sm font-semibold text-ivory-50">Split with</h2>
+        <div>
+          <h2 className="text-sm font-semibold text-ivory-50">Split with <span className="font-normal text-ink-400">(optional)</span></h2>
+          <p className="mt-1 text-xs text-ink-400">Leave everyone unselected to log it as just your own expense.</p>
+        </div>
         {friendsLoading ? (
           <p className="text-sm text-ink-400">Loading friends…</p>
         ) : friends.length === 0 ? (
           <p className="text-sm text-ink-300">
-            You need a friend first.{" "}
+            No friends yet, so this will be just your own expense.{" "}
             <Link href="/dashboard/friends" className="text-jade-300 underline underline-offset-4">
-              Add one
-            </Link>
-            .
+              Add a friend
+            </Link>{" "}
+            to split bills.
           </p>
         ) : (
           <div className="flex flex-wrap gap-2.5">
@@ -262,7 +264,7 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
         <Button type="button" variant="ghost" onClick={() => router.back()} disabled={busy}>
           Cancel
         </Button>
-        <Button type="submit" loading={busy} disabled={friends.length === 0}>
+        <Button type="submit" loading={busy}>
           Save expense
         </Button>
       </div>
