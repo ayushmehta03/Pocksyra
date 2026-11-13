@@ -48,6 +48,7 @@ export function amountsIn(text: string): string[] {
   const out: string[] = [];
   for (const m of text.matchAll(AMOUNT_RE)) {
     const a = normalizeAmount(m[1]!);
+    
     if (a) out.push(a);
   }
   return out;

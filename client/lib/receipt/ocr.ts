@@ -4,7 +4,17 @@ import { parseReceipt as parseRaw, type OcrLine, type ParsedReceipt } from "./pa
 /** Rule-based parse plus a keyword-based category guess. */
 function parseReceipt(input: OcrLine[]): ParsedReceipt {
   const r = parseRaw(input);
-  return { ...r, category: r.category ?? guessCategory(r.rawText) };
+  const out = { ...r, category: r.category ?? guessCategory(r.rawText) };
+  // Debug: shows the OCR output in the browser console. Development only.
+  if (process.env.NODE_ENV !== "production") {
+    console.groupCollapsed("[receipt] OCR output");
+    console.log("raw text:\n" + r.rawText);
+    console.table(input.map((l) => ({ text: l.text, confidence: Math.round(l.confidence) })));
+    console.log("parsed:", { merchant: out.merchant, date: out.date, total: out.total, category: out.category, currency: out.currency });
+    console.table(out.items);
+    console.groupEnd();
+  }
+  return out;
 }
 import { isPdf, readPdfText, renderPdfPages } from "./pdf";
 import { preprocessImage } from "./preprocess";
