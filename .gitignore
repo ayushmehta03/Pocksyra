@@ -1,0 +1,4 @@
+
+# local build output and scratch
+tmp/
+Claude outputs/
