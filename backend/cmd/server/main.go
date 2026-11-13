@@ -49,6 +49,10 @@ func main() {
 		log.Error("ensure indexes", "err", err)
 		os.Exit(1)
 	}
+	if err := database.RequireReplicaSet(ctx, db); err != nil {
+		log.Error("mongo replica set", "err", err)
+		os.Exit(1)
+	}
 
 	if cfg.Env == "production" {
 		gin.SetMode(gin.ReleaseMode)
@@ -61,11 +65,15 @@ func main() {
 	r.Use(gin.Logger(), gin.Recovery())
 
 	authSvc := auth.NewService(db, cfg)
+	expSvc := expenses.NewService(db)
 	routes.Setup(r, routes.Deps{
 		Auth:     auth.NewHandler(authSvc, cfg),
 		Friends:  friends.NewHandler(friends.NewService(db, cfg)),
-		Expenses: expenses.NewHandler(expenses.NewService(db)),
+		Expenses: expenses.NewHandler(expSvc),
 	})
+
+	// Safety net: rebuild balances from the books once after boot, then daily.
+	go expSvc.RunReconcileLoop(ctx, log, 24*time.Hour)
 
 	srv := &http.Server{Addr: ":" + cfg.Port, Handler: r, ReadHeaderTimeout: 10 * time.Second}
 	go func() {
