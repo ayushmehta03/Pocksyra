@@ -15,6 +15,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     if (!loading && !user) router.replace("/login");
   }, [loading, user, router]);
 
-  if (loading || !user) return <Spinner dark />;
+  if (loading || !user) return <Spinner />;
   return <AppShell user={user}>{children}</AppShell>;
 }

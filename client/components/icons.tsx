@@ -82,3 +82,31 @@ export const ArrowRightIcon = (p: P) => (
     <path d="M5 12h14m-5-5 5 5-5 5" />
   </Icon>
 );
+export const ArrowUpRightIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M7 17 17 7M8 7h9v9" />
+  </Icon>
+);
+export const ArrowDownLeftIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M17 7 7 17M16 17H7V8" />
+  </Icon>
+);
+export const WalletIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M4 7a2 2 0 0 1 2-2h11v4" />
+    <rect x="3" y="7" width="18" height="13" rx="2" />
+    <path d="M16 13.5h2" />
+  </Icon>
+);
+export const UserPlusIcon = (p: P) => (
+  <Icon {...p}>
+    <circle cx="9" cy="8" r="3.5" />
+    <path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M19 8v6M16 11h6" />
+  </Icon>
+);
+export const ScanIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M7 12h10" />
+  </Icon>
+);

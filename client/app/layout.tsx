@@ -1,15 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const instrument = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
-  variable: "--font-instrument",
-});
 const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrains" });
 
 export const metadata: Metadata = {
@@ -26,8 +20,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${instrument.variable} ${jetbrains.variable}`}>
-      <body className="bg-ivory-100 font-sans text-ink-900 antialiased">
+    <html lang="en" className={`${inter.variable} ${jetbrains.variable}`}>
+      <body className="font-sans text-ivory-100 antialiased">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

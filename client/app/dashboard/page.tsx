@@ -1,40 +1,86 @@
 "use client";
 
+import type { ComponentType, SVGProps } from "react";
 import { useAuth } from "@/components/auth-provider";
-import { CheckIcon, DownloadIcon, PlusIcon, ReceiptIcon } from "@/components/icons";
+import {
+  ArrowDownLeftIcon,
+  ArrowUpRightIcon,
+  CheckIcon,
+  DownloadIcon,
+  PlusIcon,
+  ReceiptIcon,
+  ScanIcon,
+  UserPlusIcon,
+  WalletIcon,
+} from "@/components/icons";
 import { PageHeader } from "@/components/page-header";
 import { formatMoney, greeting } from "@/lib/format";
+
+type IconType = ComponentType<SVGProps<SVGSVGElement>>;
 
 function StatCard({
   label,
   amount,
   note,
-  tone,
+  icon: Icon,
+  featured = false,
 }: {
   label: string;
   amount: string;
   note: string;
-  tone: "light" | "dark";
+  icon: IconType;
+  featured?: boolean;
 }) {
-  const dark = tone === "dark";
   return (
     <div
-      className={`relative overflow-hidden rounded-3xl p-6 ${
-        dark
-          ? "grain bg-ink-950 text-ivory-50 shadow-[0_24px_48px_-24px_rgba(6,16,13,0.7)]"
-          : "border border-ivory-300 bg-paper shadow-[0_1px_2px_rgba(6,16,13,0.04)]"
+      className={`surface relative overflow-hidden p-6 ${
+        featured ? "ring-1 ring-jade-400/25" : ""
       }`}
     >
-      {dark && (
-        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-500/30 blur-[60px]" />
+      {featured && (
+        <>
+          <div className="pointer-events-none absolute -right-10 -top-12 h-44 w-44 rounded-full bg-jade-500/30 blur-[60px]" />
+          <div className="pointer-events-none absolute -bottom-16 -left-10 h-40 w-40 rounded-full bg-gold-500/15 blur-[60px]" />
+        </>
       )}
-      <p className={`relative text-[11px] font-semibold uppercase tracking-[0.18em] ${dark ? "text-gold-300" : "text-ink-400"}`}>
-        {label}
-      </p>
-      <p className={`relative mt-4 font-mono text-3xl font-medium tracking-tight ${dark ? "text-ivory-50" : "text-ink-900"}`}>
+      <div className="relative flex items-center justify-between">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-300">{label}</p>
+        <span
+          className={`flex h-9 w-9 items-center justify-center rounded-xl ${
+            featured ? "bg-jade-400/15 text-jade-300" : "bg-white/[0.06] text-ink-300"
+          }`}
+        >
+          <Icon width={18} height={18} />
+        </span>
+      </div>
+      <p
+        className={`relative mt-5 font-mono text-3xl font-medium tracking-tight ${
+          featured ? "text-gradient" : "text-ivory-50"
+        }`}
+      >
         {amount}
       </p>
-      <p className={`relative mt-2 text-xs ${dark ? "text-ink-300" : "text-ink-400"}`}>{note}</p>
+      <p className="relative mt-2 text-xs text-ink-400">{note}</p>
+    </div>
+  );
+}
+
+function QuickAction({ icon: Icon, title, text }: { icon: IconType; title: string; text: string }) {
+  return (
+    <div
+      aria-disabled
+      className="surface group relative flex cursor-not-allowed items-center gap-4 p-4 opacity-70 transition hover:opacity-90"
+    >
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/20 to-gold-400/10 text-jade-300 ring-1 ring-white/10">
+        <Icon width={20} height={20} />
+      </span>
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-ivory-50">{title}</p>
+        <p className="truncate text-xs text-ink-400">{text}</p>
+      </div>
+      <span className="ml-auto rounded-full border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-ink-400">
+        Soon
+      </span>
     </div>
   );
 }
@@ -45,11 +91,11 @@ export default function OverviewPage() {
 
   const cur = user.defaultCurrency;
   const steps = [
-    { label: "Create your account", done: true },
+    { label: "Sign in with Google", done: true },
     { label: "Set up your profile", done: !!user.name },
     { label: "Add your first friend", done: false },
     { label: "Log your first expense", done: false },
-    { label: "Install Pocksyra on your phone", done: false },
+    { label: "Install Pocksyra on your phone", done: false, install: true },
   ];
   const doneCount = steps.filter((s) => s.done).length;
 
@@ -59,71 +105,71 @@ export default function OverviewPage() {
         eyebrow="Overview"
         title={
           <>
-            {greeting()}, <em className="text-jade-700">{user.name.split(" ")[0]}</em>
+            {greeting()}, <span className="text-gradient">{user.name.split(" ")[0]}</span>
           </>
         }
         subtitle="Here's where you stand with everyone. Friends and expenses are on the way."
       />
 
       <section className="grid gap-4 md:grid-cols-3" aria-label="Balances">
-        <StatCard label="You owe" amount={formatMoney(0, cur)} note="Nothing to pay back" tone="light" />
-        <StatCard label="You're owed" amount={formatMoney(0, cur)} note="No one owes you yet" tone="light" />
-        <StatCard label="Net balance" amount={formatMoney(0, cur)} note="All square" tone="dark" />
+        <StatCard label="You owe" amount={formatMoney(0, cur)} note="Nothing to pay back" icon={ArrowUpRightIcon} />
+        <StatCard label="You're owed" amount={formatMoney(0, cur)} note="No one owes you yet" icon={ArrowDownLeftIcon} />
+        <StatCard label="Net balance" amount={formatMoney(0, cur)} note="All square" icon={WalletIcon} featured />
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-3" aria-label="Quick actions">
+        <QuickAction icon={PlusIcon} title="Add expense" text="Split a bill" />
+        <QuickAction icon={UserPlusIcon} title="Add friend" text="By email or link" />
+        <QuickAction icon={ScanIcon} title="Scan receipt" text="Read it on-device" />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-5">
-        {/* Activity */}
         <section className="lg:col-span-3">
-          <div className="flex h-full min-h-[320px] flex-col items-center justify-center rounded-3xl border border-dashed border-ivory-400 bg-paper/60 p-10 text-center">
-            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ink-900 text-gold-300 shadow-[0_14px_30px_-12px_rgba(6,16,13,0.6)]">
+          <div className="surface flex h-full min-h-[320px] flex-col items-center justify-center p-10 text-center">
+            <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-jade-300 ring-1 ring-white/10">
               <ReceiptIcon width={28} height={28} />
             </span>
-            <h2 className="mt-6 font-display text-3xl text-ink-900">Nothing here yet</h2>
-            <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink-500">
+            <h2 className="mt-6 text-xl font-semibold tracking-tight text-ivory-50">Nothing here yet</h2>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink-300">
               Your shared expenses and settle-ups will appear here, newest first.
             </p>
-            <button
-              disabled
-              className="mt-6 inline-flex cursor-not-allowed items-center gap-2 rounded-xl bg-ink-900 px-5 py-3 text-sm font-semibold text-ivory-50 opacity-50"
-            >
-              <PlusIcon width={16} height={16} />
-              Add expense
-              <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] uppercase tracking-wider">Soon</span>
-            </button>
           </div>
         </section>
 
-        {/* Getting started */}
         <section className="lg:col-span-2">
-          <div className="rounded-3xl border border-ivory-300 bg-paper p-6">
+          <div className="surface p-6">
             <div className="flex items-baseline justify-between">
-              <h2 className="font-display text-2xl text-ink-900">Getting started</h2>
+              <h2 className="text-lg font-semibold tracking-tight text-ivory-50">Getting started</h2>
               <span className="font-mono text-xs text-ink-400">
                 {doneCount}/{steps.length}
               </span>
             </div>
-            <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-ivory-200" role="progressbar" aria-valuenow={doneCount} aria-valuemin={0} aria-valuemax={steps.length}>
+            <div
+              className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10"
+              role="progressbar"
+              aria-valuenow={doneCount}
+              aria-valuemin={0}
+              aria-valuemax={steps.length}
+            >
               <div
-                className="h-full rounded-full bg-gradient-to-r from-jade-500 to-gold-400 transition-all duration-700"
+                className="h-full rounded-full bg-gradient-to-r from-jade-400 to-gold-300 transition-all duration-700"
                 style={{ width: `${(doneCount / steps.length) * 100}%` }}
               />
             </div>
-            <ul className="mt-5 space-y-3">
+            <ul className="mt-5 space-y-3.5">
               {steps.map((s) => (
                 <li key={s.label} className="flex items-center gap-3 text-sm">
                   <span
                     className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                      s.done ? "bg-jade-500 text-white" : "border border-ivory-400 text-transparent"
+                      s.done ? "bg-jade-400 text-ink-950" : "border border-white/15 text-transparent"
                     }`}
                   >
-                    <CheckIcon width={14} height={14} strokeWidth={2.4} />
+                    <CheckIcon width={14} height={14} strokeWidth={2.6} />
                   </span>
-                  <span className={s.done ? "text-ink-400 line-through decoration-ink-300" : "text-ink-800"}>
+                  <span className={s.done ? "text-ink-400 line-through decoration-ink-500" : "text-ivory-100"}>
                     {s.label}
                   </span>
-                  {!s.done && s.label.startsWith("Install") && (
-                    <DownloadIcon width={16} height={16} className="ml-auto text-ink-300" />
-                  )}
+                  {s.install && <DownloadIcon width={16} height={16} className="ml-auto text-ink-400" />}
                 </li>
               ))}
             </ul>

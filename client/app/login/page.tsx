@@ -67,7 +67,7 @@ export default function LoginPage() {
         <button
           onClick={signIn}
           disabled={redirecting}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-ivory-300 bg-white px-5 py-3.5 text-[15px] font-semibold text-ink-900 shadow-[0_1px_2px_rgba(6,16,13,0.06),0_10px_24px_-14px_rgba(6,16,13,0.35)] outline-none transition hover:bg-ivory-50 focus-visible:ring-4 focus-visible:ring-ink-900/15 disabled:cursor-wait disabled:opacity-70"
+          className="flex w-full items-center justify-center gap-3 rounded-xl bg-white px-5 py-3.5 text-[15px] font-semibold text-ink-900 shadow-[0_12px_30px_-12px_rgba(255,255,255,0.35)] outline-none transition hover:bg-ivory-100 focus-visible:ring-4 focus-visible:ring-white/30 disabled:cursor-wait disabled:opacity-70"
         >
           {redirecting ? (
             <span className="h-5 w-5 animate-spin rounded-full border-2 border-ink-300 border-t-ink-900" />

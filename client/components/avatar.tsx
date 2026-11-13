@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { initials } from "@/lib/format";
 
-/** Google profile photo when available, gold initials otherwise. */
+/** Google profile photo when available, gradient initials otherwise. */
 export function Avatar({
   user,
   className = "h-10 w-10 text-sm",
@@ -21,13 +21,13 @@ export function Avatar({
         alt=""
         referrerPolicy="no-referrer" // Google's CDN can 403 requests with a foreign referrer
         onError={() => setFailed(true)}
-        className={`rounded-full object-cover ring-1 ring-black/10 ${className}`}
+        className={`rounded-full object-cover ring-2 ring-white/10 ${className}`}
       />
     );
   }
   return (
     <span
-      className={`flex items-center justify-center rounded-full bg-gradient-to-br from-gold-300 to-gold-500 font-bold text-ink-950 ${className}`}
+      className={`flex items-center justify-center rounded-full bg-gradient-to-br from-jade-300 to-gold-300 font-bold text-ink-950 ring-2 ring-white/10 ${className}`}
     >
       {initials(user.name)}
     </span>
