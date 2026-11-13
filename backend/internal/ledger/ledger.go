@@ -100,3 +100,57 @@ func Between(me, other bson.ObjectID, net int64) int64 {
 	}
 	return -net
 }
+
+// Key identifies one balance row: a canonical pair in one currency.
+type Key struct {
+	Low, High bson.ObjectID
+	Currency  string
+}
+
+// Totals sums deltas per balance row. Used to rebuild what the balances
+// collection should contain straight from expenses and settlements.
+type Totals map[Key]int64
+
+// Add accumulates deltas for one currency.
+func (t Totals) Add(currency string, ds []Delta) {
+	for _, d := range ds {
+		t[Key{Low: d.Low, High: d.High, Currency: currency}] += d.Amount
+	}
+}
+
+// Drift is a balance row whose stored value disagrees with the rebuilt one.
+type Drift struct {
+	Key      Key
+	Stored   int64
+	Expected int64
+}
+
+// Diff lists every row where stored and expected differ. A missing row counts
+// as zero, so a missing balance that should be non-zero is drift, and a stale
+// non-zero row that should be settled is too. Order is deterministic.
+func Diff(stored, expected Totals) []Drift {
+	keys := map[Key]struct{}{}
+	for k := range stored {
+		keys[k] = struct{}{}
+	}
+	for k := range expected {
+		keys[k] = struct{}{}
+	}
+	var out []Drift
+	for k := range keys {
+		if stored[k] != expected[k] {
+			out = append(out, Drift{Key: k, Stored: stored[k], Expected: expected[k]})
+		}
+	}
+	sort.Slice(out, func(i, j int) bool {
+		a, b := out[i].Key, out[j].Key
+		if c := bytes.Compare(a.Low[:], b.Low[:]); c != 0 {
+			return c < 0
+		}
+		if c := bytes.Compare(a.High[:], b.High[:]); c != 0 {
+			return c < 0
+		}
+		return a.Currency < b.Currency
+	})
+	return out
+}
