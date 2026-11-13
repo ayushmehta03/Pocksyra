@@ -7,9 +7,10 @@
     "build": "next build",
     "start": "next start -p 3000",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test lib/receipt/parser.test.ts lib/receipt/image-math.test.ts lib/receipt/pdf-lines.test.ts"
+    "test": "node --experimental-strip-types --test lib/receipt/parser.test.ts lib/receipt/image-math.test.ts lib/receipt/pdf-lines.test.ts lib/receipt/llm-verify.test.ts"
   },
   "dependencies": {
+    "@mlc-ai/web-llm": "^0.2.75",
     "next": "^15.5.0",
     "pdfjs-dist": "^4.10.38",
     "react": "^19.0.0",
