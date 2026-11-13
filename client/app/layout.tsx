@@ -9,6 +9,10 @@ const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-jetbrai
 export const metadata: Metadata = {
   title: "Pocksyra",
   description: "Split expenses with friends, beautifully.",
+  applicationName: "Pocksyra",
+  // iOS "Add to Home Screen" behaviour
+  appleWebApp: { capable: true, title: "Pocksyra", statusBarStyle: "black-translucent" },
+  formatDetection: { telephone: false },
 };
 
 export const viewport: Viewport = {
