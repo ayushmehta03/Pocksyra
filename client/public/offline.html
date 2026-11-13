@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#06100d">
+<title>Offline · Pocksyra</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(60% 50% at 50% 0%,rgba(25,184,135,.18),transparent),#06100d;
+    color:#f3efe4;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;text-align:center}
+  .card{max-width:360px}
+  .mark{width:64px;height:64px;margin:0 auto 24px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#7ce6c0,#19b887 55%,#0c7a58);color:#06100d;font-size:34px;font-weight:700}
+  h1{font-size:22px;margin:0 0 8px}
+  p{margin:0 0 24px;color:rgba(243,239,228,.65);line-height:1.5;font-size:15px}
+  button{background:#19b887;color:#06100d;border:0;border-radius:12px;padding:12px 22px;font-size:15px;font-weight:600;cursor:pointer}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="mark">P</div>
+    <h1>You're offline</h1>
+    <p>Pocksyra can't reach the network right now. Pages you've already opened are still available; reconnect to sync the rest.</p>
+    <button onclick="location.reload()">Try again</button>
+  </div>
+</body>
+</html>
