@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { useAuth } from "@/components/auth-provider";
+import { ScanReceipt } from "@/components/receipt/scan-receipt";
 import { Button, Field, FormError, SelectField } from "@/components/ui";
 import {
   ApiError,
@@ -17,6 +18,8 @@ import {
 } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
 import { parseBasisPoints, parseMinor } from "@/lib/money";
+import { LOW_CONFIDENCE } from "@/lib/receipt/parser";
+import type { ScanResult } from "@/lib/receipt/ocr";
 import { computeSplit, type SplitRow } from "@/lib/split";
 import { useFriends } from "@/lib/use-friends";
 
@@ -53,6 +56,8 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const keyRef = useRef<{ sig: string; key: string } | null>(null);
+  // Fields pre-filled by the receipt scanner that the reader wasn't sure about.
+  const [unsure, setUnsure] = useState<{ description?: boolean; amount?: boolean; date?: boolean }>({});
 
   const me = user as NonNullable<typeof user>;
   const friends = useMemo(() => friendData?.friends.map((f) => f.friend) ?? [], [friendData]);
@@ -83,6 +88,16 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
   const result = amountMinor && rows ? computeSplit(amountMinor, method, rows) : null;
   const splitError =
     amountMinor === null && amountText.trim() ? "Enter a valid amount." : rows === null ? "Check the values you typed." : result && !result.ok ? result.error : "";
+
+  const applyScan = (r: ScanResult) => {
+    const low = (f?: { confidence: number }) => !!f && f.confidence < LOW_CONFIDENCE;
+    if (r.merchant) setDescription(r.merchant.value);
+    if (r.total) setAmountText(r.total.value);
+    if (r.date) setDate(r.date.value);
+    if (r.currency) setCurrency(r.currency);
+    setUnsure({ description: low(r.merchant), amount: low(r.total), date: low(r.date) });
+  };
+  const edited = (k: "description" | "amount" | "date") => setUnsure((u) => ({ ...u, [k]: false }));
 
   const toggle = (id: string) => {
     setSelected((prev) => {
@@ -129,14 +144,20 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
 
   return (
     <form onSubmit={submit} className="space-y-8" noValidate>
+      <ScanReceipt onResult={applyScan} />
+
       <div className="surface space-y-5 p-6">
         <Field
           label="What was it for?"
           placeholder="Dinner at Toscana"
           value={description}
           maxLength={120}
-          onChange={(e) => setDescription(e.target.value)}
-          autoFocus
+          onChange={(e) => {
+            setDescription(e.target.value);
+            edited("description");
+          }}
+          warn={unsure.description}
+          hint={unsure.description ? "Read from the receipt; please double-check." : undefined}
         />
         <div className="grid gap-5 sm:grid-cols-[1fr_8rem_10rem]">
           <Field
@@ -144,7 +165,12 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
             inputMode="decimal"
             placeholder="0.00"
             value={amountText}
-            onChange={(e) => setAmountText(e.target.value)}
+            onChange={(e) => {
+              setAmountText(e.target.value);
+              edited("amount");
+            }}
+            warn={unsure.amount}
+            hint={unsure.amount ? "Please double-check this total." : undefined}
             error={amountText.trim() && amountMinor === null ? "Invalid amount" : undefined}
             className="font-mono"
           />
@@ -153,7 +179,17 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
               <option key={c}>{c}</option>
             ))}
           </SelectField>
-          <Field label="Date" type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} />
+          <Field
+            label="Date"
+            type="date"
+            value={date}
+            max={today()}
+            warn={unsure.date}
+            onChange={(e) => {
+              setDate(e.target.value);
+              edited("date");
+            }}
+          />
         </div>
       </div>
 

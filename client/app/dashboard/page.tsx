@@ -188,7 +188,7 @@ export default function OverviewPage() {
       <section className="grid gap-4 sm:grid-cols-3" aria-label="Quick actions">
         <QuickAction icon={PlusIcon} title="Add expense" text="Split a bill" href="/dashboard/expenses/new" />
         <QuickAction icon={UserPlusIcon} title="Add friend" text="By email, username or link" href="/dashboard/friends" />
-        <QuickAction icon={ScanIcon} title="Scan receipt" text="Read it on-device" />
+        <QuickAction icon={ScanIcon} title="Scan receipt" text="Read it on-device" href="/dashboard/expenses/new" />
       </section>
 
       <div className="grid gap-6 lg:grid-cols-5">
