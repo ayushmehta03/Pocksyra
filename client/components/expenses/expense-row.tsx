@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { Button } from "@/components/ui";
 import type { Expense, PublicUser } from "@/lib/api";
+import { categoryLabel } from "@/lib/categories";
 import { formatDate, formatMoney } from "@/lib/format";
 
 /**
@@ -50,7 +51,7 @@ export function ExpenseRow({
           <p className="truncate text-sm font-semibold text-ivory-50">{expense.description}</p>
           <p className="truncate text-xs text-ink-400">
             {iPaid ? "You" : (payer?.name ?? "Someone")} paid {formatMoney(expense.amount, expense.currency)} ·{" "}
-            {formatDate(expense.date)}
+            {formatDate(expense.date)} · {categoryLabel(expense.category)}
           </p>
         </div>
         <div className="text-right">

@@ -74,7 +74,7 @@ export default function SettlePage() {
                       {iPaid ? `You paid ${other?.name ?? "someone"}` : `${other?.name ?? "Someone"} paid you`}
                     </p>
                     <p className="truncate text-xs text-ink-400">
-                      {formatDate(s.createdAt)}
+                      {formatDate(s.date)}
                       {s.note && ` · ${s.note}`}
                     </p>
                   </div>
