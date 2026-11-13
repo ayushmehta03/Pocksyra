@@ -24,6 +24,8 @@ type SettlementInput struct {
 	Amount     int64  `json:"amount"` // minor units
 	Currency   string `json:"currency"`
 	Note       string `json:"note"`
+	// When the payment happened; defaults to now.
+	Date *time.Time `json:"date,omitempty"`
 }
 
 type SettlementView struct {
@@ -33,6 +35,7 @@ type SettlementView struct {
 	Amount    int64     `json:"amount"`
 	Currency  string    `json:"currency"`
 	Note      string    `json:"note,omitempty"`
+	Date      time.Time `json:"date"`
 	CreatedAt time.Time `json:"createdAt"`
 }
 
@@ -41,10 +44,18 @@ type SettlementPage struct {
 	People      map[string]PublicUser `json:"people"`
 }
 
+// dateOrCreated covers settlements saved before the date field existed.
+func dateOrCreated(m models.Settlement) time.Time {
+	if m.Date.IsZero() {
+		return m.CreatedAt
+	}
+	return m.Date
+}
+
 func settlementView(m models.Settlement) SettlementView {
 	return SettlementView{
 		ID: m.ID.Hex(), From: m.From.Hex(), To: m.To.Hex(), Amount: m.Amount,
-		Currency: m.Currency, Note: m.Note, CreatedAt: m.CreatedAt,
+		Currency: m.Currency, Note: m.Note, Date: dateOrCreated(m), CreatedAt: m.CreatedAt,
 	}
 }
 
@@ -84,9 +95,16 @@ func (s *Service) CreateSettlement(ctx context.Context, me bson.ObjectID, key st
 	if len([]rune(note)) > 200 {
 		return SettlementView{}, invalid("note is too long")
 	}
+	now := time.Now().UTC()
 	m := models.Settlement{
 		ID: bson.NewObjectID(), Amount: in.Amount, Currency: cur, Note: note,
-		CreatedBy: me, IdempotencyKey: key, CreatedAt: time.Now().UTC(),
+		CreatedBy: me, IdempotencyKey: key, CreatedAt: now, Date: now,
+	}
+	if in.Date != nil {
+		if in.Date.After(now.Add(36 * time.Hour)) {
+			return SettlementView{}, invalid("date can't be in the future")
+		}
+		m.Date = in.Date.UTC()
 	}
 	switch in.Direction {
 	case DirectionPaid:
