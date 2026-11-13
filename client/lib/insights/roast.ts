@@ -1,38 +1,53 @@
 import { complete, getEngine, type LlmProgress } from "@/lib/llm/engine";
-import { numbersMatchFacts, type Section } from "./facts";
+import { checkJoke, type Section } from "./facts";
 
-const SYSTEM = `You are a witty friend who roasts the user's spending habits. Be playful, never cruel. Joke about the spending, never about the person.
+const SYSTEM = `You write one-liner jokes about a person's spending, like a clever friend. Slightly savage, never insulting. Joke about the numbers and the places, never about the person.
 
-Rules:
-- Write 2 or 3 short sentences, at most 60 words, in English.
-- Use ONLY the facts you are given. Copy numbers and amounts exactly as written.
-- Do not calculate, estimate or add any number that is not in the facts.
-- Do not use lists, headings or emojis.`;
+Hard rules:
+- 1 or 2 short sentences, under 30 words in total.
+- Use only the facts you are given. Copy numbers, names and amounts exactly as written.
+- Never mention income, jobs, family, friends' spending, lifestyle, wealth, or what the person could buy or afford.
+- Never say "always", "never", "every" or "usually": you only see a few weeks of data.
+- Do not mention days, categories or places that are not in the facts.
+- No emojis, no lists, no headings.`;
 
 export type RoastResult = { text: string; source: "ai" | "plain" };
 
+const ATTEMPTS = 2;
+
 /**
- * Asks the on-device model to word one section. If it invents a number, or
- * says nothing useful, the plain-code version is used instead, so what the
- * user reads is always consistent with their data.
+ * Asks the on-device model for one joke about one section and checks it
+ * against the facts. A rejected joke gets one retry with the reason; if that
+ * also fails, the hand-written fallback is used, so what the user reads never
+ * claims more than their data shows.
  */
 export async function roastSection(section: Section, onText: (text: string) => void): Promise<RoastResult> {
-  let text = "";
-  try {
-    text = (
-      await complete(
+  let feedback = "";
+  for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
+    let text = "";
+    try {
+      text = await complete(
         [
           { role: "system", content: SYSTEM },
-          { role: "user", content: `Facts:\n${section.facts}\n\nTask: ${section.task}` },
+          {
+            role: "user",
+            content:
+              `Facts:\n${section.facts}\n\nAngle: ${section.angle}\n` +
+              `Example of the style (different data, never copy it): ${section.example}\n` +
+              (feedback ? `Your last try was rejected because ${feedback}. Fix that.\n` : "") +
+              "Write the joke now.",
+          },
         ],
-        { temperature: 0.8, maxTokens: 160, onToken: (chunk) => onText((text += chunk)) },
-      )
-    ).trim();
-  } catch {
-    return { text: section.plain, source: "plain" };
+        { temperature: attempt === 0 ? 0.8 : 0.5, maxTokens: 90, onToken: (chunk) => onText((text += chunk)) },
+      );
+    } catch {
+      break;
+    }
+    const verdict = checkJoke(text, section.facts);
+    if (verdict.ok) return { text: verdict.text, source: "ai" };
+    feedback = verdict.reason;
   }
-  if (text.length < 20 || !numbersMatchFacts(text, section.facts)) return { text: section.plain, source: "plain" };
-  return { text, source: "ai" };
+  return { text: section.fallback, source: "plain" };
 }
 
 export const prepareModel = (onProgress: (p: LlmProgress) => void) => getEngine(onProgress);

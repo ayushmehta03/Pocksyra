@@ -119,11 +119,11 @@ export default function InsightsPage() {
                   <div className="flex items-center justify-between">
                     <h2 className="text-xs font-semibold uppercase tracking-wider text-jade-300">{sec.title}</h2>
                     {cur && !cur.writing && (
-                      <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] text-ink-300">{cur.source === "ai" ? "AI roast" : "plain summary"}</span>
+                      <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] text-ink-300">{cur.source === "ai" ? "AI roast" : "quick take"}</span>
                     )}
                   </div>
                   <p className="text-[15px] leading-relaxed text-ivory-100">
-                    {cur?.text || (cur?.writing ? "…" : sec.plain)}
+                    {cur?.text || (cur?.writing ? "…" : sec.fallback)}
                     {cur?.writing && cur.text && <span className="ml-0.5 animate-pulse">▍</span>}
                   </p>
                 </article>
@@ -133,7 +133,7 @@ export default function InsightsPage() {
 
           <div className="surface space-y-3 p-5">
             {gpu === false ? (
-              <p className="text-sm text-ink-300">This browser can&apos;t run on-device AI (it needs WebGPU), so you&apos;re seeing the plain summary. Chrome or Edge on a laptop will do the full roast.</p>
+              <p className="text-sm text-ink-300">This browser can&apos;t run on-device AI (it needs WebGPU), so you&apos;re seeing the quick takes. Chrome or Edge on a laptop will do the full roast.</p>
             ) : (
               <>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
