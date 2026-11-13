@@ -52,7 +52,7 @@ func fail(c *gin.Context, err error) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 	case errors.Is(err, ErrSelf):
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	case errors.Is(err, ErrAlreadyFriends), errors.Is(err, ErrRequestPending):
+	case errors.Is(err, ErrAlreadyFriends), errors.Is(err, ErrRequestPending), errors.Is(err, ErrUnsettled):
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 	case errors.Is(err, ErrTooManyInvites):
 		c.JSON(http.StatusTooManyRequests, gin.H{"error": err.Error()})
@@ -160,7 +160,7 @@ func (h *Handler) Remove(c *gin.Context) {
 	if !ok {
 		return
 	}
-	if err := h.svc.Remove(c.Request.Context(), uid, id); err != nil {
+	if err := h.svc.Remove(c.Request.Context(), uid, id, c.Query("force") == "true"); err != nil {
 		fail(c, err)
 		return
 	}
