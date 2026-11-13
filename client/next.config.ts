@@ -16,6 +16,18 @@ const config: NextConfig = {
       { source: "/api/:path*", destination: `${API_URL}/:path*` },
     ];
   },
+  // The service worker must always be revalidated so updates roll out promptly.
+  async headers() {
+    return [
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+          { key: "Service-Worker-Allowed", value: "/" },
+        ],
+      },
+    ];
+  },
 };
 
 export default config;
