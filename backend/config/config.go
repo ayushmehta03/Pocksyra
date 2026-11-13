@@ -22,6 +22,14 @@ type Config struct {
 	// Proxies whose X-Forwarded-For we trust (needed for correct client IPs in
 	// rate limiting when deployed behind Fly/Cloud Run/nginx). Empty = trust none.
 	TrustedProxies []string
+
+	GoogleClientID     string
+	GoogleClientSecret string
+	// Must exactly match an "Authorized redirect URI" in Google Cloud Console.
+	// It points at the Next.js origin; Next forwards /auth/* to this API.
+	GoogleRedirectURL string
+	// Where the browser is sent after sign-in / on failure.
+	FrontendURL string
 }
 
 func Load() (Config, error) {
@@ -32,6 +40,11 @@ func Load() (Config, error) {
 		MongoDB:      getenv("MONGO_DB", "pocksyra"),
 		JWTSecret:    os.Getenv("JWT_SECRET"),
 		CookieDomain: os.Getenv("COOKIE_DOMAIN"),
+
+		GoogleClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+		GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		GoogleRedirectURL:  getenv("GOOGLE_REDIRECT_URL", "http://localhost:3000/auth/google/callback"),
+		FrontendURL:        strings.TrimRight(getenv("FRONTEND_URL", "http://localhost:3000"), "/"),
 	}
 
 	for _, p := range strings.Split(os.Getenv("TRUSTED_PROXIES"), ",") {
@@ -57,6 +70,9 @@ func Load() (Config, error) {
 
 	if len(cfg.JWTSecret) < 32 {
 		return cfg, errors.New("JWT_SECRET must be set and at least 32 characters")
+	}
+	if cfg.GoogleClientID == "" || cfg.GoogleClientSecret == "" {
+		return cfg, errors.New("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set (see .env.example)")
 	}
 	return cfg, nil
 }

@@ -19,8 +19,8 @@ func Setup(r *gin.Engine, d Deps) {
 
 	ag := api.Group("/auth")
 	{
-		ag.POST("/signup", d.Auth.LimitByIP(), d.Auth.Signup)
-		ag.POST("/login", d.Auth.LimitByIP(), d.Auth.Login)
+		ag.GET("/google", d.Auth.LimitByIP(), d.Auth.GoogleStart)
+		ag.GET("/google/callback", d.Auth.LimitByIP(), d.Auth.GoogleCallback)
 		ag.POST("/refresh", d.Auth.Refresh)
 		ag.POST("/logout", d.Auth.Logout)
 	}

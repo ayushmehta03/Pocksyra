@@ -6,10 +6,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-const (
-	ProviderPassword = "password"
-	ProviderGoogle   = "google"
-)
+const ProviderGoogle = "google"
 
 type AuthProvider struct {
 	Provider   string `bson:"provider"`
@@ -24,7 +21,6 @@ type User struct {
 	Name            string         `bson:"name"`
 	AvatarURL       string         `bson:"avatarUrl,omitempty"`
 	AuthProviders   []AuthProvider `bson:"authProviders"`
-	PasswordHash    string         `bson:"passwordHash,omitempty"`
 	DefaultCurrency string         `bson:"defaultCurrency"`
 	Timezone        string         `bson:"tz"`
 	CreatedAt       time.Time      `bson:"createdAt"`

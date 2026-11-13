@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand/v2"
 	"net/url"
 	"regexp"
 	"strings"
@@ -19,20 +20,11 @@ import (
 )
 
 var (
-	ErrInvalidCredentials = errors.New("invalid email or password")
-	ErrEmailTaken         = errors.New("email already registered")
-	ErrUsernameTaken      = errors.New("username already taken")
-	ErrInvalidUsername    = errors.New("username must be 3-20 chars: a-z, 0-9, underscore")
-	ErrInvalidRefresh     = errors.New("invalid refresh token")
-	ErrUserNotFound       = errors.New("user not found")
-	ErrInvalidProfile     = errors.New("invalid profile field")
+	ErrInvalidRefresh   = errors.New("invalid refresh token")
+	ErrUserNotFound     = errors.New("user not found")
+	ErrInvalidProfile   = errors.New("invalid profile field")
+	ErrEmailNotVerified = errors.New("google email is not verified")
 )
-
-var usernameRe = regexp.MustCompile(`^[a-z0-9_]{3,20}$`)
-
-// dummyHash is verified against when the email is unknown so login timing
-// doesn't reveal which emails exist.
-var dummyHash, _ = HashPassword("pocksyra-dummy-password")
 
 type Service struct {
 	users    *mongo.Collection
@@ -48,76 +40,107 @@ func NewService(db *mongo.Database, cfg config.Config) *Service {
 	}
 }
 
-type SignupInput struct {
-	Email    string
-	Username string
-	Name     string
-	Password string
-}
-
 type Tokens struct {
 	Access  string
 	Refresh string
 }
 
-func (s *Service) Signup(ctx context.Context, in SignupInput) (*models.User, error) {
-	email := normalizeEmail(in.Email)
-	username := strings.ToLower(strings.TrimSpace(in.Username))
-	if !usernameRe.MatchString(username) {
-		return nil, ErrInvalidUsername
-	}
+// ---------- Google sign-in ----------
 
-	hash, err := HashPassword(in.Password)
-	if err != nil {
+// FindOrCreateGoogleUser resolves a verified Google profile to a user:
+//  1. already linked to this Google account -> that user
+//  2. same email already registered         -> link Google to it (Google verified the email)
+//  3. otherwise                             -> create a new user with a generated username
+func (s *Service) FindOrCreateGoogleUser(ctx context.Context, p GoogleProfile) (*models.User, error) {
+	if !p.EmailVerified {
+		return nil, ErrEmailNotVerified
+	}
+	email := normalizeEmail(p.Email)
+
+	var u models.User
+	err := s.users.FindOne(ctx, bson.M{"authProviders": bson.M{"$elemMatch": bson.M{
+		"provider": models.ProviderGoogle, "providerId": p.Sub,
+	}}}).Decode(&u)
+	if err == nil {
+		return &u, nil
+	}
+	if !errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, err
 	}
 
-	u := &models.User{
-		Email:           email,
-		Username:        username,
-		Name:            strings.TrimSpace(in.Name),
-		AuthProviders:   []models.AuthProvider{{Provider: models.ProviderPassword}},
-		PasswordHash:    hash,
-		DefaultCurrency: "INR",
-		Timezone:        "Asia/Kolkata",
-		CreatedAt:       time.Now().UTC(),
+	err = s.users.FindOneAndUpdate(ctx, bson.M{"email": email},
+		bson.M{"$push": bson.M{"authProviders": models.AuthProvider{Provider: models.ProviderGoogle, ProviderID: p.Sub}}},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	).Decode(&u)
+	if err == nil {
+		return &u, nil
+	}
+	if !errors.Is(err, mongo.ErrNoDocuments) {
+		return nil, err
 	}
 
-	res, err := s.users.InsertOne(ctx, u)
-	if err != nil {
+	name := strings.TrimSpace(p.Name)
+	if name == "" {
+		name = strings.SplitN(email, "@", 2)[0]
+	}
+	avatar := ""
+	if strings.HasPrefix(p.Picture, "https://") {
+		avatar = p.Picture
+	}
+
+	for attempt := 0; attempt < 6; attempt++ {
+		nu := &models.User{
+			Email:           email,
+			Username:        candidateUsername(email, attempt),
+			Name:            name,
+			AvatarURL:       avatar,
+			AuthProviders:   []models.AuthProvider{{Provider: models.ProviderGoogle, ProviderID: p.Sub}},
+			DefaultCurrency: "INR",
+			Timezone:        "Asia/Kolkata",
+			CreatedAt:       time.Now().UTC(),
+		}
+		res, err := s.users.InsertOne(ctx, nu)
+		if err == nil {
+			nu.ID = res.InsertedID.(bson.ObjectID)
+			return nu, nil
+		}
 		if mongo.IsDuplicateKeyError(err) {
 			if strings.Contains(err.Error(), "username") {
-				return nil, ErrUsernameTaken
+				continue // taken, try another suffix
 			}
-			return nil, ErrEmailTaken
+			// Email raced with a concurrent sign-in: use the winner.
+			if e := s.users.FindOne(ctx, bson.M{"email": email}).Decode(&u); e == nil {
+				return &u, nil
+			}
 		}
 		return nil, err
 	}
-	u.ID = res.InsertedID.(bson.ObjectID)
-	return u, nil
+	return nil, errors.New("could not allocate a username")
 }
 
-func (s *Service) Login(ctx context.Context, email, password string) (*models.User, error) {
-	var u models.User
-	err := s.users.FindOne(ctx, bson.M{"email": normalizeEmail(email)}).Decode(&u)
-	if errors.Is(err, mongo.ErrNoDocuments) {
-		_, _ = VerifyPassword(password, dummyHash)
-		return nil, ErrInvalidCredentials
+var nonUsernameChars = regexp.MustCompile(`[^a-z0-9_]+`)
+
+// candidateUsername derives a valid username (^[a-z0-9_]{3,20}$) from the
+// email's local part. Attempt 0 is the bare name; later attempts add digits.
+func candidateUsername(email string, attempt int) string {
+	local := email
+	if i := strings.IndexByte(email, '@'); i > 0 {
+		local = email[:i]
 	}
-	if err != nil {
-		return nil, err
+	base := nonUsernameChars.ReplaceAllString(strings.ToLower(local), "")
+	if len(base) < 3 {
+		base += "user"
 	}
-	// Google-only accounts have no password hash.
-	if u.PasswordHash == "" {
-		_, _ = VerifyPassword(password, dummyHash)
-		return nil, ErrInvalidCredentials
+	if len(base) > 14 {
+		base = base[:14]
 	}
-	ok, err := VerifyPassword(password, u.PasswordHash)
-	if err != nil || !ok {
-		return nil, ErrInvalidCredentials
+	if attempt == 0 {
+		return base
 	}
-	return &u, nil
+	return fmt.Sprintf("%s%04d", base, rand.IntN(10000))
 }
+
+// ---------- Sessions ----------
 
 func (s *Service) GetUser(ctx context.Context, id string) (*models.User, error) {
 	oid, err := bson.ObjectIDFromHex(id)
@@ -132,7 +155,7 @@ func (s *Service) GetUser(ctx context.Context, id string) (*models.User, error) 
 	return &u, err
 }
 
-// NewSession starts a brand-new token family (login/signup).
+// NewSession starts a brand-new token family (a fresh sign-in).
 func (s *Service) NewSession(ctx context.Context, u *models.User, userAgent string) (Tokens, error) {
 	return s.issue(ctx, u.ID, bson.NewObjectID().Hex(), userAgent)
 }
@@ -211,6 +234,8 @@ func (s *Service) Logout(ctx context.Context, refreshToken string) error {
 func normalizeEmail(e string) string {
 	return strings.ToLower(strings.TrimSpace(e))
 }
+
+// ---------- Profile ----------
 
 var currencyRe = regexp.MustCompile(`^[A-Z]{3}$`)
 

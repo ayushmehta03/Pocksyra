@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/oauth2"
 
 	"github.com/ayushmehta03/Pocksyra/backend/config"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/ratelimit"
@@ -21,22 +22,22 @@ const (
 )
 
 type Handler struct {
-	svc          *Service
-	cfg          config.Config
-	ipLimiter    *ratelimit.Limiter // signup + login, per client IP
-	emailLimiter *ratelimit.Limiter // signup + login, per email
+	svc       *Service
+	cfg       config.Config
+	oauth     *oauth2.Config
+	ipLimiter *ratelimit.Limiter // OAuth endpoints, per client IP
 }
 
 func NewHandler(svc *Service, cfg config.Config) *Handler {
 	return &Handler{
-		svc:          svc,
-		cfg:          cfg,
-		ipLimiter:    ratelimit.New(20, 15*time.Minute),
-		emailLimiter: ratelimit.New(10, 15*time.Minute),
+		svc:       svc,
+		cfg:       cfg,
+		oauth:     newOAuthConfig(cfg),
+		ipLimiter: ratelimit.New(30, 15*time.Minute),
 	}
 }
 
-// LimitByIP throttles the credential endpoints per client IP.
+// LimitByIP throttles the sign-in endpoints per client IP.
 func (h *Handler) LimitByIP() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if ok, wait := h.ipLimiter.Allow(c.ClientIP()); !ok {
@@ -50,79 +51,6 @@ func (h *Handler) LimitByIP() gin.HandlerFunc {
 func tooMany(c *gin.Context, wait time.Duration) {
 	c.Header("Retry-After", strconv.Itoa(int(math.Ceil(wait.Seconds()))))
 	c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "too many attempts, try again later"})
-}
-
-type signupRequest struct {
-	Email    string `json:"email" binding:"required,email,max=254"`
-	Username string `json:"username" binding:"required"`
-	Name     string `json:"name" binding:"required,max=60"`
-	Password string `json:"password" binding:"required,min=8,max=128"`
-}
-
-type loginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required"`
-}
-
-func (h *Handler) Signup(c *gin.Context) {
-	var req signupRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body", "details": err.Error()})
-		return
-	}
-	if ok, wait := h.emailLimiter.Allow("signup:" + normalizeEmail(req.Email)); !ok {
-		tooMany(c, wait)
-		return
-	}
-	u, err := h.svc.Signup(c.Request.Context(), SignupInput(req))
-	switch {
-	case errors.Is(err, ErrEmailTaken), errors.Is(err, ErrUsernameTaken):
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
-		return
-	case errors.Is(err, ErrInvalidUsername):
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	case err != nil:
-		serverError(c, err)
-		return
-	}
-	tokens, err := h.svc.NewSession(c.Request.Context(), u, c.Request.UserAgent())
-	if err != nil {
-		serverError(c, err)
-		return
-	}
-	h.setAuthCookies(c, tokens)
-	c.JSON(http.StatusCreated, gin.H{"user": u.Public()})
-}
-
-func (h *Handler) Login(c *gin.Context) {
-	var req loginRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
-		return
-	}
-	emailKey := "login:" + normalizeEmail(req.Email)
-	if ok, wait := h.emailLimiter.Allow(emailKey); !ok {
-		tooMany(c, wait)
-		return
-	}
-	u, err := h.svc.Login(c.Request.Context(), req.Email, req.Password)
-	if errors.Is(err, ErrInvalidCredentials) {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
-	if err != nil {
-		serverError(c, err)
-		return
-	}
-	tokens, err := h.svc.NewSession(c.Request.Context(), u, c.Request.UserAgent())
-	if err != nil {
-		serverError(c, err)
-		return
-	}
-	h.emailLimiter.Reset(emailKey)
-	h.setAuthCookies(c, tokens)
-	c.JSON(http.StatusOK, gin.H{"user": u.Public()})
 }
 
 func (h *Handler) Refresh(c *gin.Context) {
