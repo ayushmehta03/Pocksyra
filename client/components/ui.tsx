@@ -25,9 +25,15 @@ function Message({ id, error, hint }: { id: string; error?: string; hint?: strin
   return null;
 }
 
-type FieldProps = InputHTMLAttributes<HTMLInputElement> & { label: string; error?: string; hint?: string };
+type FieldProps = InputHTMLAttributes<HTMLInputElement> & {
+  label: string;
+  error?: string;
+  hint?: string;
+  /** soft warning (e.g. a low-confidence OCR value): yellow border, not an error */
+  warn?: boolean;
+};
 
-export function Field({ label, error, hint, className = "", ...props }: FieldProps) {
+export function Field({ label, error, hint, warn, className = "", ...props }: FieldProps) {
   const id = useId();
   return (
     <div className="space-y-2">
@@ -38,7 +44,7 @@ export function Field({ label, error, hint, className = "", ...props }: FieldPro
         id={id}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-err` : undefined}
-        className={`${inputBase} ${error ? "border-red-400/70" : "border-white/10"} ${className}`}
+        className={`${inputBase} ${error ? "border-red-400/70" : warn ? "border-gold-400/70" : "border-white/10"} ${className}`}
         {...props}
       />
       <Message id={id} error={error} hint={hint} />
