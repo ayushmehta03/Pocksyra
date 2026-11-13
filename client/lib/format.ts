@@ -9,13 +9,24 @@ export function initials(name: string): string {
   );
 }
 
+/** Decimal places of a currency's minor unit (2 for INR/USD, 0 for JPY). */
+export function minorDigits(currency: string): number {
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency }).resolvedOptions()
+      .maximumFractionDigits ?? 2;
+  } catch {
+    return 2;
+  }
+}
+
 /** Minor units (paise/cents) -> localized currency string. */
 export function formatMoney(minor: number, currency: string): string {
+  const digits = minorDigits(currency);
   const locale = currency === "INR" ? "en-IN" : undefined;
   try {
-    return new Intl.NumberFormat(locale, { style: "currency", currency }).format(minor / 100);
+    return new Intl.NumberFormat(locale, { style: "currency", currency }).format(minor / 10 ** digits);
   } catch {
-    return `${(minor / 100).toFixed(2)} ${currency}`;
+    return `${(minor / 10 ** digits).toFixed(digits)} ${currency}`;
   }
 }
 
