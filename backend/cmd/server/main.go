@@ -17,6 +17,7 @@ import (
 	"github.com/ayushmehta03/Pocksyra/backend/config"
 	"github.com/ayushmehta03/Pocksyra/backend/database"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/auth"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/expenses"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/friends"
 	"github.com/ayushmehta03/Pocksyra/backend/routes"
 )
@@ -61,8 +62,9 @@ func main() {
 
 	authSvc := auth.NewService(db, cfg)
 	routes.Setup(r, routes.Deps{
-		Auth:    auth.NewHandler(authSvc, cfg),
-		Friends: friends.NewHandler(friends.NewService(db, cfg)),
+		Auth:     auth.NewHandler(authSvc, cfg),
+		Friends:  friends.NewHandler(friends.NewService(db, cfg)),
+		Expenses: expenses.NewHandler(expenses.NewService(db)),
 	})
 
 	srv := &http.Server{Addr: ":" + cfg.Port, Handler: r, ReadHeaderTimeout: 10 * time.Second}

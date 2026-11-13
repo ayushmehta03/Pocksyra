@@ -6,12 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/ayushmehta03/Pocksyra/backend/internal/auth"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/expenses"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/friends"
 )
 
 type Deps struct {
-	Auth    *auth.Handler
-	Friends *friends.Handler
+	Auth     *auth.Handler
+	Friends  *friends.Handler
+	Expenses *expenses.Handler
 }
 
 func Setup(r *gin.Engine, d Deps) {
@@ -41,5 +43,15 @@ func Setup(r *gin.Engine, d Deps) {
 		protected.POST("/invites", d.Friends.CreateInvite)
 		protected.GET("/invites/:token", d.Friends.PreviewInvite)
 		protected.POST("/invites/:token/accept", d.Friends.AcceptInvite)
+
+		protected.GET("/expenses", d.Expenses.List)
+		protected.POST("/expenses", d.Expenses.Create)
+		protected.GET("/expenses/:id", d.Expenses.Get)
+		protected.PATCH("/expenses/:id", d.Expenses.Update)
+		protected.DELETE("/expenses/:id", d.Expenses.Delete)
+
+		protected.GET("/balances", d.Expenses.Balances)
+		protected.GET("/settlements", d.Expenses.ListSettlements)
+		protected.POST("/settlements", d.Expenses.CreateSettlement)
 	}
 }
