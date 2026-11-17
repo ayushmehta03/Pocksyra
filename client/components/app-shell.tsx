@@ -110,9 +110,9 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
       {/* Mobile top bar */}
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-white/10 bg-ink-950/75 px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur-xl lg:hidden">
         <Logo />
-        <button onClick={onLogout} aria-label="Log out" className="rounded-full">
+        <Link href="/dashboard/settings" aria-label="Your account" className="rounded-full">
           <Avatar user={user} className="h-9 w-9 text-xs" />
-        </button>
+        </Link>
       </header>
 
       <main className="px-5 pb-32 pt-8 sm:px-8 lg:ml-72 lg:px-12 lg:pb-16 lg:pt-12">

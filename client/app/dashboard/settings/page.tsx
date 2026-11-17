@@ -1,17 +1,20 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Avatar } from "@/components/avatar";
 import { useAuth } from "@/components/auth-provider";
 import { PageHeader } from "@/components/page-header";
 import { Button, Field, FormError, SelectField } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
+import { LogoutIcon } from "@/components/icons";
 import { formatDate } from "@/lib/format";
 
 const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "AUD", "CAD", "JPY"];
 
 export default function SettingsPage() {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
+  const router = useRouter();
 
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState("INR");
@@ -126,6 +129,17 @@ export default function SettingsPage() {
                 <dd className="text-ivory-100">Google</dd>
               </div>
             </dl>
+            <button
+              type="button"
+              onClick={async () => {
+                await logout();
+                router.replace("/login");
+              }}
+              className="relative mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 px-3 py-2.5 text-sm font-medium text-ink-300 transition hover:bg-white/[0.06] hover:text-ivory-50"
+            >
+              <LogoutIcon width={16} height={16} />
+              Log out
+            </button>
           </div>
         </aside>
       </div>
