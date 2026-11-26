@@ -5,6 +5,7 @@ import { useAuth } from "@/components/auth-provider";
 import { EmptyState, ListSkeleton } from "@/components/empty-state";
 import { CheckIcon, SwapIcon } from "@/components/icons";
 import { PageHeader } from "@/components/page-header";
+import { PendingPayments } from "@/components/settle/pending-payments";
 import { SettleRow } from "@/components/settle/settle-row";
 import { FormError } from "@/components/ui";
 import { errorMessage, settlementsApi, type SettlementPage } from "@/lib/api";
@@ -32,6 +33,12 @@ export default function SettlePage() {
 
   if (!user) return null;
 
+  // What I've told a friend I paid but they haven't confirmed yet.
+  const pendingOutTo = (friendId: string, currency: string) =>
+    (history?.settlements ?? [])
+      .filter((s) => s.status === "pending" && s.from === user.id && s.to === friendId && s.currency === currency)
+      .reduce((sum, s) => sum + s.amount, 0);
+
   const onSettled = async () => {
     await Promise.all([reload(), loadHistory()]);
   };
@@ -42,6 +49,17 @@ export default function SettlePage() {
 
       <FormError message={error || historyError} />
 
+      {history && (
+        <PendingPayments
+          page={history}
+          meId={user.id}
+          confirm={settlementsApi.confirm}
+          decline={settlementsApi.decline}
+          cancel={settlementsApi.cancel}
+          onChanged={onSettled}
+        />
+      )}
+
       <section className="space-y-3" aria-label="Open balances">
         <h2 className="text-sm font-semibold text-ivory-50">Open balances</h2>
         {loading ? (
@@ -51,18 +69,24 @@ export default function SettlePage() {
         ) : (
           <ul className="surface divide-y divide-white/[0.06]">
             {data.balances.map((b) => (
-              <SettleRow key={`${b.friend.id}-${b.currency}`} balance={b} onSettled={onSettled} />
+              <SettleRow
+                key={`${b.friend.id}-${b.currency}`}
+                balance={b}
+                pendingOut={pendingOutTo(b.friend.id, b.currency)}
+                onSettled={onSettled}
+              />
             ))}
           </ul>
         )}
       </section>
 
-      {history && history.settlements.length > 0 && (
+      {history && history.settlements.some((s) => s.status !== "pending") && (
         <section className="space-y-3" aria-label="History">
           <h2 className="text-sm font-semibold text-ivory-50">History</h2>
           <ul className="surface divide-y divide-white/[0.06]">
-            {history.settlements.map((s) => {
+            {history.settlements.filter((s) => s.status !== "pending").map((s) => {
               const iPaid = s.from === user.id;
+              const dead = s.status === "declined" || s.status === "cancelled";
               const other = history.people[iPaid ? s.to : s.from];
               return (
                 <li key={s.id} className="flex items-center gap-4 px-5 py-4">
@@ -76,9 +100,14 @@ export default function SettlePage() {
                     <p className="truncate text-xs text-ink-400">
                       {formatDate(s.date)}
                       {s.note && ` · ${s.note}`}
+                      {dead && ` · ${s.status === "declined" ? "not received" : "cancelled"}`}
                     </p>
                   </div>
-                  <p className={`font-mono text-sm ${iPaid ? "text-gold-400" : "text-jade-300"}`}>
+                  <p
+                    className={`font-mono text-sm ${
+                      dead ? "text-ink-400 line-through" : iPaid ? "text-gold-400" : "text-jade-300"
+                    }`}
+                  >
                     {formatMoney(s.amount, s.currency)}
                   </p>
                 </li>

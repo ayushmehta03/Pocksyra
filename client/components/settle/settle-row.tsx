@@ -11,7 +11,16 @@ import { minorToInput, parseMinor } from "@/lib/money";
 import { buildUpiLink } from "@/lib/upi";
 
 /** A friend I have an open balance with, plus the inline settle-up form. */
-export function SettleRow({ balance, onSettled }: { balance: FriendBalance; onSettled: () => Promise<void> }) {
+export function SettleRow({
+  balance,
+  pendingOut = 0,
+  onSettled,
+}: {
+  balance: FriendBalance;
+  /** Amount I've already said I paid this friend that is still waiting for their confirmation. */
+  pendingOut?: number;
+  onSettled: () => Promise<void>;
+}) {
   const { user } = useAuth();
   const { friend, currency, amount, friendUpiId } = balance;
   const theyOweMe = amount > 0;
@@ -64,6 +73,8 @@ export function SettleRow({ balance, onSettled }: { balance: FriendBalance; onSe
           amount: minor,
           currency,
           note: note.trim() || undefined,
+          // A payment I made only counts once they confirm they received it.
+          needsConfirmation: !theyOweMe,
         },
         key.current,
       );
@@ -84,6 +95,11 @@ export function SettleRow({ balance, onSettled }: { balance: FriendBalance; onSe
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-ivory-50">{friend.name}</p>
           <p className="truncate text-xs text-ink-400">{theyOweMe ? "owes you" : "you owe them"}</p>
+          {pendingOut > 0 && (
+            <p className="truncate text-xs text-gold-300">
+              {formatMoney(pendingOut, currency)} waiting for {friend.name} to confirm
+            </p>
+          )}
         </div>
         <p className={`font-mono text-sm font-medium ${theyOweMe ? "text-jade-300" : "text-gold-400"}`}>
           {formatMoney(outstanding, currency)}
@@ -98,7 +114,7 @@ export function SettleRow({ balance, onSettled }: { balance: FriendBalance; onSe
           <p className="text-xs text-ink-300">
             {theyOweMe
               ? `Record that ${friend.name} paid you back.`
-              : `Record that you paid ${friend.name}.`}{" "}
+              : `Tell ${friend.name} you've paid. They'll be asked to confirm, and your balance changes once they do.`}{" "}
             Partial payments are fine.
           </p>
           {canPayByUpi &&
@@ -127,7 +143,7 @@ export function SettleRow({ balance, onSettled }: { balance: FriendBalance; onSe
                 )}
                 <p className="text-xs text-ink-400">
                   The button opens your UPI app on your phone. On a computer, copy the ID and pay from your phone. When
-                  the payment goes through, tap Record payment here.
+                  the payment goes through, tap I&apos;ve paid here.
                 </p>
               </div>
             ) : (
@@ -158,7 +174,7 @@ export function SettleRow({ balance, onSettled }: { balance: FriendBalance; onSe
           <FormError message={error} />
           <div className="flex justify-end">
             <Button type="submit" loading={busy}>
-              Record payment
+              {theyOweMe ? "Record payment" : "I've paid"}
             </Button>
           </div>
         </form>

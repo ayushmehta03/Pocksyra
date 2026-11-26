@@ -10,6 +10,7 @@ It is an installable web app (PWA) with a Go API behind it. Receipts are scanned
 - **Friends** by email request or a shareable invite link.
 - **Expenses** with equal, exact, percentage or share-based splits. Splitting is optional, so personal spending can be tracked too.
 - **Balances and settle up.** A running balance per friend, and settlements that reverse out what you owe.
+- **Pay with UPI.** Add your UPI ID in Settings. When you owe a friend in INR, the Settle page shows their UPI ID and a button that opens your UPI app with the amount filled in. A payment you make waits for the other person to confirm it before the balance changes.
 - **Categories** with icons, filters, search and a monthly summary.
 - **Receipt scanning** from a photo or PDF, read locally with Tesseract OCR (PDFs use their text layer first). Fields the parser is unsure about are highlighted for a quick check.
 - **On-device AI** (WebLLM, WebGPU) that rescues receipts the rules can't read and writes the monthly roast. See [On-device AI](#on-device-ai).

@@ -211,6 +211,8 @@ export type SettlementInput = {
   currency: string;
   note?: string;
   date?: string; // ISO; defaults to now on the server
+  /** For a payment I made: wait for the other person to confirm before the balance moves. */
+  needsConfirmation?: boolean;
 };
 
 export type Settlement = {
@@ -222,6 +224,10 @@ export type Settlement = {
   note?: string;
   date: string;
   createdAt: string;
+  /** Only confirmed payments count in balances. */
+  status: "confirmed" | "pending" | "declined" | "cancelled";
+  /** Who recorded it; for a pending payment this is the person who paid. */
+  createdBy: string;
 };
 
 export type SettlementPage = { settlements: Settlement[]; people: Record<string, PublicUser> };
@@ -256,6 +262,12 @@ export const balancesApi = {
 };
 
 export const settlementsApi = {
+  /** receiver: the money arrived, so the balance moves */
+  confirm: (id: string) => request<Settlement>(`/api/settlements/${id}/confirm`, { method: "POST" }),
+  /** receiver: the money never arrived */
+  decline: (id: string) => request<Settlement>(`/api/settlements/${id}/decline`, { method: "POST" }),
+  /** payer: withdraw a payment that is still pending */
+  cancel: (id: string) => request<Settlement>(`/api/settlements/${id}/cancel`, { method: "POST" }),
   list: (friend?: string) =>
     request<SettlementPage>(`/api/settlements${friend ? `?friend=${encodeURIComponent(friend)}` : ""}`),
   create: (input: SettlementInput, key?: string) =>
