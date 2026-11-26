@@ -197,6 +197,8 @@ export type FriendBalance = {
   currency: string;
   /** > 0: they owe me · < 0: I owe them (minor units) */
   amount: number;
+  /** Their UPI ID. Only sent when I owe them and they have added one. */
+  friendUpiId?: string;
 };
 
 export type BalanceTotals = { currency: string; owed: number; owe: number; net: number };

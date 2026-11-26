@@ -12,3 +12,20 @@ export function isValidUpi(raw: string): boolean {
 }
 
 export const UPI_HINT = "Looks like name@bank, for example ayush@okhdfcbank";
+
+/**
+ * Builds a UPI payment link (the standard upi://pay deep link). On a phone it
+ * opens the user's UPI app with the payee and amount filled in. UPI only moves
+ * rupees, so the currency is always INR. `amount` is in rupees, e.g. "250.50".
+ */
+export function buildUpiLink(opts: { upiId: string; name: string; amount: string; note?: string }): string {
+  const enc = (v: string) => encodeURIComponent(v);
+  const params = [
+    `pa=${enc(normalizeUpi(opts.upiId)).replace(/%40/g, "@")}`,
+    `pn=${enc(opts.name.trim() || "Pocksyra friend")}`,
+    `am=${enc(opts.amount)}`,
+    "cu=INR",
+  ];
+  if (opts.note?.trim()) params.push(`tn=${enc(opts.note.trim().slice(0, 50))}`);
+  return `upi://pay?${params.join("&")}`;
+}
