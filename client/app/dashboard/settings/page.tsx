@@ -9,6 +9,7 @@ import { Button, Field, FormError, SelectField } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
 import { LogoutIcon } from "@/components/icons";
 import { formatDate } from "@/lib/format";
+import { UPI_HINT, isValidUpi, normalizeUpi } from "@/lib/upi";
 
 const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "AUD", "CAD", "JPY"];
 
@@ -19,6 +20,7 @@ export default function SettingsPage() {
   const [name, setName] = useState("");
   const [currency, setCurrency] = useState("INR");
   const [tz, setTz] = useState("");
+  const [upi, setUpi] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -28,6 +30,7 @@ export default function SettingsPage() {
       setName(user.name);
       setCurrency(user.defaultCurrency);
       setTz(user.tz);
+      setUpi(user.upiId ?? "");
     }
   }, [user]);
 
@@ -44,7 +47,11 @@ export default function SettingsPage() {
 
   if (!user) return null;
 
-  const dirty = name.trim() !== user.name || currency !== user.defaultCurrency || tz !== user.tz;
+  const dirty =
+    name.trim() !== user.name ||
+    currency !== user.defaultCurrency ||
+    tz !== user.tz ||
+    normalizeUpi(upi) !== (user.upiId ?? "");
 
   async function onSave(e: FormEvent) {
     e.preventDefault();
@@ -54,9 +61,13 @@ export default function SettingsPage() {
       setError("Name can't be empty");
       return;
     }
+    if (upi.trim() && !isValidUpi(upi)) {
+      setError("That doesn't look like a UPI ID. " + UPI_HINT);
+      return;
+    }
     setSaving(true);
     try {
-      await updateProfile({ name: name.trim(), defaultCurrency: currency, tz });
+      await updateProfile({ name: name.trim(), defaultCurrency: currency, tz, upiId: normalizeUpi(upi) });
       setMessage("Changes saved");
     } catch (err) {
       setError(errorMessage(err));
@@ -97,6 +108,18 @@ export default function SettingsPage() {
               ))}
             </SelectField>
           </div>
+
+          <Field
+            label="UPI ID"
+            value={upi}
+            onChange={(e) => setUpi(e.target.value)}
+            placeholder="name@okhdfcbank"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            inputMode="email"
+            hint={user.upiId ? UPI_HINT : `${UPI_HINT}. Friends will use it to pay you back.`}
+          />
 
           <div className="flex justify-end pt-2">
             <Button type="submit" loading={saving} disabled={!dirty}>

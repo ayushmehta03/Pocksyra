@@ -18,6 +18,7 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { InstallCard } from "@/components/pwa/install-card";
 import { usePwa } from "@/components/pwa/pwa-provider";
+import { UpiCard } from "@/components/upi/upi-card";
 import { formatMoney, greeting } from "@/lib/format";
 import { useBalances } from "@/lib/use-balances";
 import { useExpenses } from "@/lib/use-expenses";
@@ -170,6 +171,8 @@ export default function OverviewPage() {
           <ArrowRightIcon width={16} height={16} className="ml-auto text-jade-300 transition group-hover:translate-x-0.5" />
         </Link>
       )}
+
+      <UpiCard />
 
       <InstallCard />
 
