@@ -103,6 +103,7 @@ type updateMeRequest struct {
 	AvatarURL       *string `json:"avatarUrl" binding:"omitempty,max=500"`
 	DefaultCurrency *string `json:"defaultCurrency"`
 	Timezone        *string `json:"tz"`
+	UPIID           *string `json:"upiId" binding:"omitempty,max=100"`
 }
 
 func (h *Handler) UpdateMe(c *gin.Context) {

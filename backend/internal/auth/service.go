@@ -245,6 +245,7 @@ type ProfileUpdate struct {
 	AvatarURL       *string
 	DefaultCurrency *string
 	Timezone        *string
+	UPIID           *string
 }
 
 func (s *Service) UpdateProfile(ctx context.Context, id string, in ProfileUpdate) (*models.User, error) {
@@ -254,6 +255,7 @@ func (s *Service) UpdateProfile(ctx context.Context, id string, in ProfileUpdate
 	}
 
 	set := bson.M{}
+	unset := bson.M{}
 	if in.Name != nil {
 		set["name"] = *in.Name
 	}
@@ -279,12 +281,31 @@ func (s *Service) UpdateProfile(ctx context.Context, id string, in ProfileUpdate
 		}
 		set["tz"] = *in.Timezone
 	}
-	if len(set) == 0 {
+	if in.UPIID != nil {
+		upi, err := NormalizeUPI(*in.UPIID)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %s", ErrInvalidProfile, err.Error())
+		}
+		if upi == "" {
+			unset["upiId"] = ""
+		} else {
+			set["upiId"] = upi
+		}
+	}
+	if len(set) == 0 && len(unset) == 0 {
 		return s.GetUser(ctx, id)
 	}
 
+	update := bson.M{}
+	if len(set) > 0 {
+		update["$set"] = set
+	}
+	if len(unset) > 0 {
+		update["$unset"] = unset
+	}
+
 	var u models.User
-	err = s.users.FindOneAndUpdate(ctx, bson.M{"_id": oid}, bson.M{"$set": set},
+	err = s.users.FindOneAndUpdate(ctx, bson.M{"_id": oid}, update,
 		options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&u)
 	if errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrUserNotFound

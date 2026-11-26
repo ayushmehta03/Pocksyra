@@ -23,7 +23,10 @@ type User struct {
 	AuthProviders   []AuthProvider `bson:"authProviders"`
 	DefaultCurrency string         `bson:"defaultCurrency"`
 	Timezone        string         `bson:"tz"`
-	CreatedAt       time.Time      `bson:"createdAt"`
+	// UPIID is the user's UPI address (VPA), used to receive payments when
+	// friends settle up. Optional; lowercase, e.g. "name@okhdfcbank".
+	UPIID     string    `bson:"upiId,omitempty"`
+	CreatedAt time.Time `bson:"createdAt"`
 }
 
 // PublicUser is what the API returns. It never contains the password hash.
@@ -35,6 +38,7 @@ type PublicUser struct {
 	AvatarURL       string    `json:"avatarUrl,omitempty"`
 	DefaultCurrency string    `json:"defaultCurrency"`
 	Timezone        string    `json:"tz"`
+	UPIID           string    `json:"upiId,omitempty"`
 	CreatedAt       time.Time `json:"createdAt"`
 }
 
@@ -47,6 +51,7 @@ func (u *User) Public() PublicUser {
 		AvatarURL:       u.AvatarURL,
 		DefaultCurrency: u.DefaultCurrency,
 		Timezone:        u.Timezone,
+		UPIID:           u.UPIID,
 		CreatedAt:       u.CreatedAt,
 	}
 }
