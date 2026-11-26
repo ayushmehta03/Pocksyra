@@ -23,6 +23,7 @@ type User struct {
 	AuthProviders   []AuthProvider `bson:"authProviders"`
 	DefaultCurrency string         `bson:"defaultCurrency"`
 	Timezone        string         `bson:"tz"`
+
 	// UPIID is the user's UPI address (VPA), used to receive payments when
 	// friends settle up. Optional; lowercase, e.g. "name@okhdfcbank".
 	UPIID     string    `bson:"upiId,omitempty"`

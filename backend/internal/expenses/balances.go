@@ -16,6 +16,10 @@ type FriendBalance struct {
 	Friend   PublicUser `json:"friend"`
 	Currency string     `json:"currency"`
 	Amount   int64      `json:"amount"`
+
+	// FriendUPIID is the friend's UPI ID. It is only filled in when I owe them
+	// (Amount < 0), because that is the only time I need it to pay them.
+	FriendUPIID string `json:"friendUpiId,omitempty"`
 }
 
 // Totals rolls my balances up per currency (currencies are never mixed).
@@ -58,11 +62,29 @@ func (s *Service) Summary(ctx context.Context, me bson.ObjectID) (Summary, error
 		return Summary{}, err
 	}
 
+	amts := make([]int64, len(rows))
+	var owedTo []bson.ObjectID // friends I owe money to
+	for i, r := range rows {
+		amts[i] = ledger.Between(me, ids[i], r.Net)
+		if amts[i] < 0 {
+			owedTo = append(owedTo, ids[i])
+		}
+	}
+	upi, err := s.upiIDs(ctx, owedTo)
+	if err != nil {
+		return Summary{}, err
+	}
+
 	out := Summary{Balances: []FriendBalance{}, Totals: []Totals{}}
 	byCur := map[string]*Totals{}
 	for i, r := range rows {
-		amt := ledger.Between(me, ids[i], r.Net)
-		out.Balances = append(out.Balances, FriendBalance{Friend: people[ids[i].Hex()], Currency: r.Currency, Amount: amt})
+		amt := amts[i]
+		out.Balances = append(out.Balances, FriendBalance{
+			Friend:      people[ids[i].Hex()],
+			Currency:    r.Currency,
+			Amount:      amt,
+			FriendUPIID: upi[ids[i].Hex()],
+		})
 		t := byCur[r.Currency]
 		if t == nil {
 			t = &Totals{Currency: r.Currency}
@@ -81,6 +103,27 @@ func (s *Service) Summary(ctx context.Context, me bson.ObjectID) (Summary, error
 	sort.Slice(out.Totals, func(i, j int) bool { return out.Totals[i].Currency < out.Totals[j].Currency })
 	// Biggest absolute amounts first.
 	sort.Slice(out.Balances, func(i, j int) bool { return abs(out.Balances[i].Amount) > abs(out.Balances[j].Amount) })
+	return out, nil
+}
+
+// upiIDs returns the saved UPI IDs of the given users, keyed by hex id.
+// Users without one are left out.
+func (s *Service) upiIDs(ctx context.Context, ids []bson.ObjectID) (map[string]string, error) {
+	out := make(map[string]string, len(ids))
+	if len(ids) == 0 {
+		return out, nil
+	}
+	cur, err := s.users.Find(ctx, bson.M{"_id": bson.M{"$in": ids}, "upiId": bson.M{"$exists": true, "$ne": ""}})
+	if err != nil {
+		return nil, err
+	}
+	var us []models.User
+	if err := cur.All(ctx, &us); err != nil {
+		return nil, err
+	}
+	for _, u := range us {
+		out[u.ID.Hex()] = u.UPIID
+	}
 	return out, nil
 }
 
