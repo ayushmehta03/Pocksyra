@@ -10,6 +10,8 @@ export type User = {
   avatarUrl?: string;
   defaultCurrency: string;
   tz: string;
+  /** UPI address (VPA) used to receive payments; absent until the user adds one. */
+  upiId?: string;
   createdAt: string;
 };
 
@@ -18,6 +20,8 @@ export type ProfileUpdate = Partial<{
   avatarUrl: string;
   defaultCurrency: string;
   tz: string;
+  /** Empty string removes the saved UPI ID. */
+  upiId: string;
 }>;
 
 /** What other people are allowed to see about a user. */
