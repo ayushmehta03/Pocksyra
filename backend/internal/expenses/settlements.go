@@ -26,6 +26,9 @@ type SettlementInput struct {
 	Note       string `json:"note"`
 	// When the payment happened; defaults to now.
 	Date *time.Time `json:"date,omitempty"`
+	// For a payment I made: leave the balance alone until the other person
+	// confirms they got it.
+	NeedsConfirmation bool `json:"needsConfirmation,omitempty"`
 }
 
 type SettlementView struct {
@@ -37,6 +40,23 @@ type SettlementView struct {
 	Note      string    `json:"note,omitempty"`
 	Date      time.Time `json:"date"`
 	CreatedAt time.Time `json:"createdAt"`
+	// Status is confirmed, pending, declined or cancelled. Only confirmed
+	// payments are counted in balances.
+	Status string `json:"status"`
+	// CreatedBy is who recorded it. For a pending payment this is the payer.
+	CreatedBy string `json:"createdBy"`
+}
+
+// notApplied matches every settlement that counts in balances: confirmed ones
+// and older rows that have no status at all.
+var notApplied = bson.M{"$nin": bson.A{models.SettlementPending, models.SettlementDeclined, models.SettlementCancelled}}
+
+// statusOf treats a missing status as confirmed.
+func statusOf(m models.Settlement) string {
+	if m.Status == "" {
+		return models.SettlementConfirmed
+	}
+	return m.Status
 }
 
 type SettlementPage struct {
@@ -56,6 +76,7 @@ func settlementView(m models.Settlement) SettlementView {
 	return SettlementView{
 		ID: m.ID.Hex(), From: m.From.Hex(), To: m.To.Hex(), Amount: m.Amount,
 		Currency: m.Currency, Note: m.Note, Date: dateOrCreated(m), CreatedAt: m.CreatedAt,
+		Status: statusOf(m), CreatedBy: m.CreatedBy.Hex(),
 	}
 }
 
@@ -114,6 +135,12 @@ func (s *Service) CreateSettlement(ctx context.Context, me bson.ObjectID, key st
 	default:
 		return SettlementView{}, invalid("direction must be paid or received")
 	}
+	if in.NeedsConfirmation {
+		if in.Direction != DirectionPaid {
+			return SettlementView{}, invalid("only a payment you made can wait for confirmation")
+		}
+		m.Status = models.SettlementPending
+	}
 	if err := s.requireFriends(ctx, me, []bson.ObjectID{other}); err != nil {
 		return SettlementView{}, err
 	}
@@ -121,6 +148,9 @@ func (s *Service) CreateSettlement(ctx context.Context, me bson.ObjectID, key st
 	err = s.inTx(ctx, func(ctx context.Context) error {
 		if _, err := s.settlements.InsertOne(ctx, m); err != nil {
 			return err
+		}
+		if m.Status == models.SettlementPending {
+			return nil // nothing moves until the receiver confirms
 		}
 		return s.applyDeltas(ctx, m.Currency, []ledger.Delta{ledger.SettlementDelta(m.From, m.To, m.Amount)})
 	})
@@ -171,4 +201,54 @@ func (s *Service) ListSettlements(ctx context.Context, me bson.ObjectID, friend 
 		return SettlementPage{}, err
 	}
 	return page, nil
+}
+
+// ConfirmSettlement is the receiver saying the money arrived. The payment is
+// marked confirmed and the balance moves in the same transaction.
+func (s *Service) ConfirmSettlement(ctx context.Context, me, id bson.ObjectID) (SettlementView, error) {
+	return s.decide(ctx, id, bson.M{"to": me}, models.SettlementConfirmed)
+}
+
+// DeclineSettlement is the receiver saying the money never arrived. Balances
+// are untouched.
+func (s *Service) DeclineSettlement(ctx context.Context, me, id bson.ObjectID) (SettlementView, error) {
+	return s.decide(ctx, id, bson.M{"to": me}, models.SettlementDeclined)
+}
+
+// CancelSettlement lets the payer withdraw a payment nobody has answered yet.
+func (s *Service) CancelSettlement(ctx context.Context, me, id bson.ObjectID) (SettlementView, error) {
+	return s.decide(ctx, id, bson.M{"createdBy": me}, models.SettlementCancelled)
+}
+
+// decide moves a pending settlement to its final status. who restricts which
+// person may do it (the receiver, or the payer when cancelling). The status
+// check and the update are one atomic operation, so two quick taps can't apply
+// the same payment twice.
+func (s *Service) decide(ctx context.Context, id bson.ObjectID, who bson.M, to string) (SettlementView, error) {
+	filter := bson.M{"_id": id, "status": models.SettlementPending}
+	for k, v := range who {
+		filter[k] = v
+	}
+
+	var m models.Settlement
+	err := s.inTx(ctx, func(ctx context.Context) error {
+		now := time.Now().UTC()
+		err := s.settlements.FindOneAndUpdate(ctx, filter,
+			bson.M{"$set": bson.M{"status": to, "decidedAt": now}},
+			options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&m)
+		if err == mongo.ErrNoDocuments {
+			return ErrNotPending
+		}
+		if err != nil {
+			return err
+		}
+		if to != models.SettlementConfirmed {
+			return nil
+		}
+		return s.applyDeltas(ctx, m.Currency, []ledger.Delta{ledger.SettlementDelta(m.From, m.To, m.Amount)})
+	})
+	if err != nil {
+		return SettlementView{}, err
+	}
+	return settlementView(m), nil
 }

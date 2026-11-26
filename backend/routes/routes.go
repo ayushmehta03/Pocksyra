@@ -53,5 +53,8 @@ func Setup(r *gin.Engine, d Deps) {
 		protected.GET("/balances", d.Expenses.Balances)
 		protected.GET("/settlements", d.Expenses.ListSettlements)
 		protected.POST("/settlements", d.Expenses.CreateSettlement)
+		protected.POST("/settlements/:id/confirm", d.Expenses.ConfirmSettlement)
+		protected.POST("/settlements/:id/decline", d.Expenses.DeclineSettlement)
+		protected.POST("/settlements/:id/cancel", d.Expenses.CancelSettlement)
 	}
 }

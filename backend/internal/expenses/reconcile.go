@@ -52,7 +52,7 @@ func (s *Service) Reconcile(ctx context.Context, fix bool) (ReconcileReport, err
 	}
 	_ = ec.Close(ctx)
 
-	sc, err := s.settlements.Find(ctx, bson.M{})
+	sc, err := s.settlements.Find(ctx, bson.M{"status": notApplied})
 	if err != nil {
 		return ReconcileReport{}, err
 	}
@@ -120,7 +120,7 @@ func (s *Service) repairPair(ctx context.Context, k ledger.Key) error {
 			totals.Add(e.Currency, ledger.ExpenseDeltas(e.PaidBy, e.Splits))
 		}
 
-		sc, err := s.settlements.Find(ctx, bson.M{"currency": k.Currency, "$or": bson.A{
+		sc, err := s.settlements.Find(ctx, bson.M{"currency": k.Currency, "status": notApplied, "$or": bson.A{
 			bson.M{"from": k.Low, "to": k.High},
 			bson.M{"from": k.High, "to": k.Low},
 		}})

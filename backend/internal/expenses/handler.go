@@ -1,6 +1,7 @@
 package expenses
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -58,6 +59,8 @@ func fail(c *gin.Context, err error) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	case errors.Is(err, ErrNotFriends):
 		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+	case errors.Is(err, ErrNotPending):
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 	default:
 		_ = c.Error(err)
 		slog.Error("expenses request failed", "method", c.Request.Method, "path", c.FullPath(), "err", err)
@@ -216,4 +219,30 @@ func (h *Handler) ListSettlements(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, page)
+}
+
+// POST /settlements/:id/confirm  (receiver: yes, the money arrived)
+func (h *Handler) ConfirmSettlement(c *gin.Context) { h.decide(c, h.svc.ConfirmSettlement) }
+
+// POST /settlements/:id/decline  (receiver: no, I did not get it)
+func (h *Handler) DeclineSettlement(c *gin.Context) { h.decide(c, h.svc.DeclineSettlement) }
+
+// POST /settlements/:id/cancel  (payer: withdraw a payment that is still pending)
+func (h *Handler) CancelSettlement(c *gin.Context) { h.decide(c, h.svc.CancelSettlement) }
+
+func (h *Handler) decide(c *gin.Context, act func(context.Context, bson.ObjectID, bson.ObjectID) (SettlementView, error)) {
+	uid, ok := me(c)
+	if !ok {
+		return
+	}
+	id, ok := idParam(c)
+	if !ok {
+		return
+	}
+	v, err := act(c.Request.Context(), uid, id)
+	if err != nil {
+		fail(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, v)
 }

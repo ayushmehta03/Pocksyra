@@ -24,6 +24,7 @@ var (
 	ErrInvalid       = errors.New("invalid input")
 	ErrNotFriends    = errors.New("everyone in an expense must be your friend")
 	ErrNoOtherPeople = errors.New("add at least one other person") // kept for callers that need a shared expense
+	ErrNotPending    = errors.New("this payment is no longer waiting for a response")
 )
 
 const (

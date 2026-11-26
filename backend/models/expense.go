@@ -41,6 +41,16 @@ type Expense struct {
 	DeletedAt      *time.Time     `bson:"deletedAt,omitempty"` // soft delete
 }
 
+// Settlement statuses. Only confirmed settlements move balances. An empty
+// status means confirmed, which is how rows from before confirmations existed
+// are stored.
+const (
+	SettlementConfirmed = "confirmed"
+	SettlementPending   = "pending"   // payer says they paid; waiting for the receiver to confirm
+	SettlementDeclined  = "declined"  // receiver says the money never arrived
+	SettlementCancelled = "cancelled" // payer withdrew it before it was confirmed
+)
+
 // Settlement is the `settlements` collection document: From paid To in real
 // life (cash, UPI, ...) and wants the debt reduced.
 type Settlement struct {
@@ -54,6 +64,9 @@ type Settlement struct {
 	CreatedBy      bson.ObjectID `bson:"createdBy"`
 	IdempotencyKey string        `bson:"idempotencyKey,omitempty"`
 	CreatedAt      time.Time     `bson:"createdAt"`
+
+	Status    string     `bson:"status,omitempty"`
+	DecidedAt *time.Time `bson:"decidedAt,omitempty"` // when it was confirmed, declined or cancelled
 }
 
 // Balance is the `balances` collection document: a materialized running total
