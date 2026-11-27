@@ -52,10 +52,19 @@ type Sender interface {
 	Send(ctx context.Context, e Event)
 }
 
-type Service struct {
-	users *mongo.Collection
-	coll  *mongo.Collection
+// Pusher delivers a notification to the person's devices as a push message.
+type Pusher interface {
+	Push(ctx context.Context, user bson.ObjectID, title, body, link string)
 }
+
+type Service struct {
+	users  *mongo.Collection
+	coll   *mongo.Collection
+	pusher Pusher
+}
+
+// SetPusher makes every saved notification also go out as a push message.
+func (s *Service) SetPusher(p Pusher) { s.pusher = p }
 
 func NewService(db *mongo.Database) *Service {
 	return &Service{
@@ -67,11 +76,11 @@ func NewService(db *mongo.Database) *Service {
 // Send saves a notification. It never returns an error: a lost notification is
 // logged, not allowed to undo the expense, payment or friend request behind it.
 // It keeps running if the request that triggered it has already finished.
-func (s *Service) Send(ctx context.Context, e Event) {
+func (s *Service) Send(parent context.Context, e Event) {
 	if e.To.IsZero() || e.To == e.Actor {
 		return
 	}
-	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), 3*time.Second)
 	defer cancel()
 
 	msg := e.Message
@@ -84,6 +93,10 @@ func (s *Service) Send(ctx context.Context, e Event) {
 	}
 	if _, err := s.coll.InsertOne(ctx, n); err != nil {
 		slog.Warn("notification not saved", "type", e.Type, "err", err)
+		return
+	}
+	if s.pusher != nil {
+		go s.pusher.Push(context.WithoutCancel(parent), e.To, "Pocksyra", msg, e.Link)
 	}
 }
 

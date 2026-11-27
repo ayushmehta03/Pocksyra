@@ -22,7 +22,8 @@ const (
 	CollSettlements = "settlements"
 	CollBalances    = "balances"
 
-	CollNotifications = "notifications"
+	CollNotifications     = "notifications"
+	CollPushSubscriptions = "push_subscriptions"
 )
 
 func Connect(ctx context.Context, uri string) (*mongo.Client, error) {
@@ -133,6 +134,15 @@ func EnsureIndexes(ctx context.Context, db *mongo.Database) error {
 	_, err = db.Collection(CollNotifications).Indexes().CreateMany(ctx, []mongo.IndexModel{
 		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "createdAt", Value: -1}}},
 		{Keys: bson.D{{Key: "createdAt", Value: 1}}, Options: options.Index().SetExpireAfterSeconds(90 * 24 * 60 * 60)},
+	})
+	if err != nil {
+		return err
+	}
+
+	// Push: one row per browser endpoint, looked up by user when sending.
+	_, err = db.Collection(CollPushSubscriptions).Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{Keys: bson.D{{Key: "endpoint", Value: 1}}, Options: options.Index().SetUnique(true)},
+		{Keys: bson.D{{Key: "userId", Value: 1}}},
 	})
 	if err != nil {
 		return err

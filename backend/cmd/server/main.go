@@ -20,6 +20,7 @@ import (
 	"github.com/ayushmehta03/Pocksyra/backend/internal/expenses"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/friends"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/notify"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/push"
 	"github.com/ayushmehta03/Pocksyra/backend/routes"
 )
 
@@ -67,6 +68,15 @@ func main() {
 
 	authSvc := auth.NewService(db, cfg)
 	notifySvc := notify.NewService(db)
+	pushSvc, err := push.NewService(db, cfg)
+	if err != nil {
+		log.Error("push", "err", err)
+		os.Exit(1)
+	}
+	notifySvc.SetPusher(pushSvc)
+	if pushSvc.Enabled() {
+		log.Info("web push enabled")
+	}
 	expSvc := expenses.NewService(db)
 	expSvc.SetNotifier(notifySvc)
 	friendsSvc := friends.NewService(db, cfg)
@@ -76,6 +86,7 @@ func main() {
 		Friends:  friends.NewHandler(friendsSvc),
 		Expenses: expenses.NewHandler(expSvc),
 		Notify:   notify.NewHandler(notifySvc),
+		Push:     push.NewHandler(pushSvc),
 	})
 
 	// Safety net: rebuild balances from the books once after boot, then daily.

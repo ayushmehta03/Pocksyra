@@ -9,6 +9,7 @@ import (
 	"github.com/ayushmehta03/Pocksyra/backend/internal/expenses"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/friends"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/notify"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/push"
 )
 
 type Deps struct {
@@ -16,6 +17,7 @@ type Deps struct {
 	Friends  *friends.Handler
 	Expenses *expenses.Handler
 	Notify   *notify.Handler
+	Push     *push.Handler
 }
 
 func Setup(r *gin.Engine, d Deps) {
@@ -63,5 +65,9 @@ func Setup(r *gin.Engine, d Deps) {
 		protected.GET("/notifications/unread", d.Notify.Unread)
 		protected.PATCH("/notifications", d.Notify.MarkAllRead)
 		protected.POST("/notifications/:id/read", d.Notify.MarkRead)
+
+		protected.GET("/push/key", d.Push.Key)
+		protected.POST("/push/subscribe", d.Push.Subscribe)
+		protected.POST("/push/unsubscribe", d.Push.Unsubscribe)
 	}
 }

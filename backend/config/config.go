@@ -30,6 +30,12 @@ type Config struct {
 	GoogleRedirectURL string
 	// Where the browser is sent after sign-in / on failure.
 	FrontendURL string
+
+	// Web push. Leave VAPID_PRIVATE_KEY empty to switch push off.
+	// Generate one with: go run ./cmd/vapidgen
+	VAPIDPrivateKey string
+	// Contact URL sent to push services (mailto: or https:). Defaults to FrontendURL.
+	VAPIDSubject string
 }
 
 func Load() (Config, error) {
@@ -46,6 +52,9 @@ func Load() (Config, error) {
 		GoogleRedirectURL:  getenv("GOOGLE_REDIRECT_URL", "http://localhost:3000/auth/google/callback"),
 		FrontendURL:        strings.TrimRight(getenv("FRONTEND_URL", "http://localhost:3000"), "/"),
 	}
+
+	cfg.VAPIDPrivateKey = strings.TrimSpace(os.Getenv("VAPID_PRIVATE_KEY"))
+	cfg.VAPIDSubject = getenv("VAPID_SUBJECT", cfg.FrontendURL)
 
 	for _, p := range strings.Split(os.Getenv("TRUSTED_PROXIES"), ",") {
 		if p = strings.TrimSpace(p); p != "" {
