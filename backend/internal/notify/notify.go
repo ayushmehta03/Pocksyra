@@ -28,6 +28,7 @@ const (
 	TypePaymentConfirmed = "payment_confirmed" // they confirmed my payment
 	TypePaymentDeclined  = "payment_declined"  // they say they didn't get my payment
 	TypePaymentCancelled = "payment_cancelled" // they withdrew a payment they had said they made
+	TypePaymentReminder  = "payment_reminder"  // a balance I owe has sat untouched for a while
 )
 
 // ActorToken in a message is replaced with the actor's name when it is saved.
@@ -58,9 +59,11 @@ type Pusher interface {
 }
 
 type Service struct {
-	users  *mongo.Collection
-	coll   *mongo.Collection
-	pusher Pusher
+	users       *mongo.Collection
+	coll        *mongo.Collection
+	balances    *mongo.Collection
+	settlements *mongo.Collection
+	pusher      Pusher
 }
 
 // SetPusher makes every saved notification also go out as a push message.
@@ -68,8 +71,10 @@ func (s *Service) SetPusher(p Pusher) { s.pusher = p }
 
 func NewService(db *mongo.Database) *Service {
 	return &Service{
-		users: db.Collection(database.CollUsers),
-		coll:  db.Collection(database.CollNotifications),
+		users:       db.Collection(database.CollUsers),
+		coll:        db.Collection(database.CollNotifications),
+		balances:    db.Collection(database.CollBalances),
+		settlements: db.Collection(database.CollSettlements),
 	}
 }
 
@@ -77,11 +82,21 @@ func NewService(db *mongo.Database) *Service {
 // logged, not allowed to undo the expense, payment or friend request behind it.
 // It keeps running if the request that triggered it has already finished.
 func (s *Service) Send(parent context.Context, e Event) {
+	s.send(parent, e)
+}
+
+// send does the work of Send and says whether a notification was saved. It is
+// not saved when the recipient muted that kind, or when saving failed.
+func (s *Service) send(parent context.Context, e Event) bool {
 	if e.To.IsZero() || e.To == e.Actor {
-		return
+		return false
 	}
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), 3*time.Second)
 	defer cancel()
+
+	if s.isMuted(ctx, e.To, e.Type) {
+		return false
+	}
 
 	msg := e.Message
 	if strings.Contains(msg, ActorToken) {
@@ -93,11 +108,12 @@ func (s *Service) Send(parent context.Context, e Event) {
 	}
 	if _, err := s.coll.InsertOne(ctx, n); err != nil {
 		slog.Warn("notification not saved", "type", e.Type, "err", err)
-		return
+		return false
 	}
 	if s.pusher != nil {
 		go s.pusher.Push(context.WithoutCancel(parent), e.To, "Pocksyra", msg, e.Link)
 	}
+	return true
 }
 
 func (s *Service) actorName(ctx context.Context, id bson.ObjectID) string {

@@ -65,6 +65,8 @@ func Setup(r *gin.Engine, d Deps) {
 		protected.GET("/notifications/unread", d.Notify.Unread)
 		protected.PATCH("/notifications", d.Notify.MarkAllRead)
 		protected.POST("/notifications/:id/read", d.Notify.MarkRead)
+		protected.GET("/notifications/preferences", d.Notify.GetPreferences)
+		protected.PUT("/notifications/preferences", d.Notify.SetPreferences)
 
 		protected.GET("/push/key", d.Push.Key)
 		protected.POST("/push/subscribe", d.Push.Subscribe)

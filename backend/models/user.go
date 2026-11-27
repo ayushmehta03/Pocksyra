@@ -28,6 +28,10 @@ type User struct {
 	// friends settle up. Optional; lowercase, e.g. "name@okhdfcbank".
 	UPIID     string    `bson:"upiId,omitempty"`
 	CreatedAt time.Time `bson:"createdAt"`
+
+	// NotifyMuted lists the notification groups the user switched off
+	// (see notify.Groups). Empty means they get everything.
+	NotifyMuted []string `bson:"notifyMuted,omitempty"`
 }
 
 // PublicUser is what the API returns. It never contains the password hash.

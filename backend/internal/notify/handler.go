@@ -1,6 +1,7 @@
 package notify
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
 	"strconv"
@@ -88,4 +89,46 @@ func (h *Handler) MarkAllRead(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusNoContent)
+}
+
+// GET /notifications/preferences  (the groups I switched off)
+func (h *Handler) GetPreferences(c *gin.Context) {
+	uid, ok := me(c)
+	if !ok {
+		return
+	}
+	muted, err := h.svc.Muted(c.Request.Context(), uid)
+	if err != nil {
+		fail(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"muted": muted})
+}
+
+type preferencesRequest struct {
+	Muted []string `json:"muted" binding:"max=10"`
+}
+
+// PUT /notifications/preferences  (replaces the groups I switched off)
+func (h *Handler) SetPreferences(c *gin.Context) {
+	uid, ok := me(c)
+	if !ok {
+		return
+	}
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, 4<<10)
+	var req preferencesRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request body"})
+		return
+	}
+	muted, err := h.svc.SetMuted(c.Request.Context(), uid, req.Muted)
+	if errors.Is(err, ErrBadGroup) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "unknown notification type"})
+		return
+	}
+	if err != nil {
+		fail(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"muted": muted})
 }
