@@ -8,7 +8,7 @@ import { Button, Field, FormError } from "@/components/ui";
 import { errorMessage, newIdempotencyKey, settlementsApi, type FriendBalance } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
 import { minorToInput, parseMinor } from "@/lib/money";
-import { buildUpiLink } from "@/lib/upi";
+import { UpiPayActions } from "@/components/settle/upi-pay-actions";
 
 /** A friend I have an open balance with, plus the inline settle-up form. */
 export function SettleRow({
@@ -41,15 +41,15 @@ export function SettleRow({
   // UPI only moves rupees, so the pay button is for INR balances where I owe them.
   const canPayByUpi = !theyOweMe && currency === "INR";
   const payMinor = parseMinor(text, currency);
-  const upiLink =
+  const upiOpts =
     canPayByUpi && friendUpiId && payMinor
-      ? buildUpiLink({
+      ? {
           upiId: friendUpiId,
           name: friend.name,
           amount: minorToInput(payMinor, currency),
           note: note || "Pocksyra settle up",
-        })
-      : "";
+        }
+      : null;
 
   const copyUpi = async () => {
     if (!friendUpiId) return;
@@ -148,20 +148,12 @@ export function SettleRow({
                     {copied ? "Copied" : "Copy"}
                   </Button>
                 </div>
-                {upiLink ? (
-                  <a
-                    href={upiLink}
-                    className="flex w-full items-center justify-center rounded-xl bg-gradient-to-b from-jade-400 to-jade-500 px-5 py-3 text-sm font-semibold text-ink-950 shadow-[0_10px_30px_-10px_rgba(63,214,163,0.55)] transition hover:from-jade-300 hover:to-jade-400"
-                  >
-                    Pay {formatMoney(payMinor ?? 0, currency)} with UPI
-                  </a>
+                {upiOpts ? (
+                  <UpiPayActions opts={upiOpts} amountLabel={formatMoney(payMinor ?? 0, currency)} />
                 ) : (
                   <p className="text-xs text-ink-400">Enter an amount below to get a payment link.</p>
                 )}
-                <p className="text-xs text-ink-400">
-                  The button opens your UPI app on your phone. On a computer, copy the ID and pay from your phone. When
-                  the payment goes through, tap I&apos;ve paid here.
-                </p>
+                <p className="text-xs text-ink-400">When the payment goes through, tap I&apos;ve paid below.</p>
               </div>
             ) : (
               <p className="rounded-xl border border-white/10 px-4 py-3 text-xs text-ink-300">
