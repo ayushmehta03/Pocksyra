@@ -33,11 +33,16 @@ export default function SettlePage() {
 
   if (!user) return null;
 
-  // What I've told a friend I paid but they haven't confirmed yet.
-  const pendingOutTo = (friendId: string, currency: string) =>
-    (history?.settlements ?? [])
-      .filter((s) => s.status === "pending" && s.from === user.id && s.to === friendId && s.currency === currency)
-      .reduce((sum, s) => sum + s.amount, 0);
+  // Payments with one friend that still wait for an answer. "Out" is what I said I paid them;
+  // "in" is what they say they paid me.
+  const pendingWith = (friendId: string, currency: string) => {
+    const mine = (history?.settlements ?? []).filter((s) => s.status === "pending" && s.currency === currency);
+    const sum = (list: typeof mine) => list.reduce((total, s) => total + s.amount, 0);
+    return {
+      out: sum(mine.filter((s) => s.from === user.id && s.to === friendId)),
+      in: sum(mine.filter((s) => s.from === friendId && s.to === user.id)),
+    };
+  };
 
   const onSettled = async () => {
     await Promise.all([reload(), loadHistory()]);
@@ -72,7 +77,8 @@ export default function SettlePage() {
               <SettleRow
                 key={`${b.friend.id}-${b.currency}`}
                 balance={b}
-                pendingOut={pendingOutTo(b.friend.id, b.currency)}
+                pendingOut={pendingWith(b.friend.id, b.currency).out}
+                pendingIn={pendingWith(b.friend.id, b.currency).in}
                 onSettled={onSettled}
               />
             ))}

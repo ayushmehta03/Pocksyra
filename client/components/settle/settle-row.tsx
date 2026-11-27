@@ -14,11 +14,14 @@ import { buildUpiLink } from "@/lib/upi";
 export function SettleRow({
   balance,
   pendingOut = 0,
+  pendingIn = 0,
   onSettled,
 }: {
   balance: FriendBalance;
-  /** Amount I've already said I paid this friend that is still waiting for their confirmation. */
+  /** Amount I've said I paid this friend that is still waiting for their confirmation. */
   pendingOut?: number;
+  /** Amount this friend says they paid me that is still waiting for my confirmation. */
+  pendingIn?: number;
   onSettled: () => Promise<void>;
 }) {
   const { user } = useAuth();
@@ -33,6 +36,7 @@ export function SettleRow({
   const [error, setError] = useState("");
   const key = useRef(newIdempotencyKey());
   const [copied, setCopied] = useState(false);
+  const waiting = pendingOut > 0 || pendingIn > 0;
 
   // UPI only moves rupees, so the pay button is for INR balances where I owe them.
   const canPayByUpi = !theyOweMe && currency === "INR";
@@ -100,16 +104,29 @@ export function SettleRow({
               {formatMoney(pendingOut, currency)} waiting for {friend.name} to confirm
             </p>
           )}
+          {pendingIn > 0 && (
+            <p className="truncate text-xs text-gold-300">
+              {friend.name} says they paid {formatMoney(pendingIn, currency)}. Confirm it above.
+            </p>
+          )}
         </div>
         <p className={`font-mono text-sm font-medium ${theyOweMe ? "text-jade-300" : "text-gold-400"}`}>
           {formatMoney(outstanding, currency)}
         </p>
-        <Button size="sm" variant={open ? "ghost" : "primary"} onClick={() => setOpen((o) => !o)}>
-          {open ? "Close" : "Settle up"}
-        </Button>
+        {waiting ? (
+          // A payment between us is waiting for an answer. Settling again now would double-count it,
+          // so this stays off until it is confirmed, declined or cancelled.
+          <Button size="sm" variant="ghost" disabled>
+            Pending
+          </Button>
+        ) : (
+          <Button size="sm" variant={open ? "ghost" : "primary"} onClick={() => setOpen((o) => !o)}>
+            {open ? "Close" : "Settle up"}
+          </Button>
+        )}
       </div>
 
-      {open && (
+      {open && !waiting && (
         <form onSubmit={submit} className="mt-4 space-y-4 rounded-xl bg-white/[0.03] p-4" noValidate>
           <p className="text-xs text-ink-300">
             {theyOweMe
