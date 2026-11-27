@@ -92,6 +92,9 @@ func main() {
 	// Safety net: rebuild balances from the books once after boot, then daily.
 	go expSvc.RunReconcileLoop(ctx, log, 24*time.Hour)
 
+	// Nudge people about balances that have sat untouched for a week.
+	go notifySvc.RunReminderLoop(ctx, log, time.Hour)
+
 	srv := &http.Server{Addr: ":" + cfg.Port, Handler: r, ReadHeaderTimeout: 10 * time.Second}
 	go func() {
 		log.Info("api listening", "addr", srv.Addr)
