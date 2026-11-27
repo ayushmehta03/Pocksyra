@@ -6,6 +6,8 @@ import type { ReactNode } from "react";
 import { Avatar } from "@/components/avatar";
 import { useAuth } from "@/components/auth-provider";
 import { Logo } from "@/components/auth-shell";
+import { NotificationBell } from "@/components/notifications/notification-bell";
+import { NotificationsProvider } from "@/components/notifications/notifications-provider";
 import {
   HomeIcon,
   LogoutIcon,
@@ -64,7 +66,15 @@ function SideLink({ item, active }: { item: NavItem; active: boolean }) {
   );
 }
 
-export function AppShell({ user, children }: { user: User; children: ReactNode }) {
+export function AppShell(props: { user: User; children: ReactNode }) {
+  return (
+    <NotificationsProvider>
+      <ShellContent {...props} />
+    </NotificationsProvider>
+  );
+}
+
+function ShellContent({ user, children }: { user: User; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
@@ -79,8 +89,9 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
       {/* Desktop sidebar */}
       <aside className="grain fixed inset-y-0 left-0 z-20 hidden w-72 flex-col overflow-hidden border-r border-white/10 bg-ink-950/70 p-6 backdrop-blur-2xl lg:flex">
         <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-jade-600/25 blur-[90px]" />
-        <div className="relative px-1.5 pb-8 pt-1">
+        <div className="relative flex items-center justify-between px-1.5 pb-8 pt-1">
           <Logo />
+          <NotificationBell />
         </div>
 
         <nav className="relative flex-1 space-y-1" aria-label="Main">
@@ -110,9 +121,12 @@ export function AppShell({ user, children }: { user: User; children: ReactNode }
       {/* Mobile top bar */}
       <header className="sticky top-0 z-20 flex items-center justify-between border-b border-white/10 bg-ink-950/75 px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur-xl lg:hidden">
         <Logo />
-        <Link href="/dashboard/settings" aria-label="Your account" className="rounded-full">
-          <Avatar user={user} className="h-9 w-9 text-xs" />
-        </Link>
+        <div className="flex items-center gap-1">
+          <NotificationBell />
+          <Link href="/dashboard/settings" aria-label="Your account" className="rounded-full">
+            <Avatar user={user} className="h-9 w-9 text-xs" />
+          </Link>
+        </div>
       </header>
 
       <main className="px-5 pb-32 pt-8 sm:px-8 lg:ml-72 lg:px-12 lg:pb-16 lg:pt-12">

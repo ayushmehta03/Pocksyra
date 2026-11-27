@@ -286,3 +286,22 @@ export function errorMessage(err: unknown): string {
   }
   return "Can't reach the server. Check your connection and try again.";
 }
+
+// ---------- notifications ----------
+
+export type AppNotification = {
+  id: string;
+  type: string;
+  message: string;
+  /** App path to open when the notification is tapped, e.g. /dashboard/settle */
+  link?: string;
+  read: boolean;
+  createdAt: string;
+};
+
+export const notificationsApi = {
+  list: () => request<{ notifications: AppNotification[]; unread: number }>("/api/notifications"),
+  unread: () => request<{ unread: number }>("/api/notifications/unread"),
+  markRead: (id: string) => request<void>(`/api/notifications/${id}/read`, { method: "POST" }),
+  markAllRead: () => request<void>("/api/notifications", { method: "PATCH" }),
+};
