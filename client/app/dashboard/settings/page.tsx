@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Avatar } from "@/components/avatar";
+import { PushCard } from "@/components/notifications/push-card";
 import { useAuth } from "@/components/auth-provider";
 import { PageHeader } from "@/components/page-header";
 import { Button, Field, FormError, SelectField } from "@/components/ui";
@@ -128,7 +129,7 @@ export default function SettingsPage() {
           </div>
         </form>
 
-        <aside className="lg:col-span-2">
+        <aside className="lg:col-span-2 lg:row-span-2">
           <div className="surface relative overflow-hidden p-6">
             <div className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-jade-500/25 blur-[70px]" />
             <div className="relative flex items-center gap-4">
@@ -165,6 +166,10 @@ export default function SettingsPage() {
             </button>
           </div>
         </aside>
+
+        <div className="lg:col-span-3">
+          <PushCard />
+        </div>
       </div>
     </div>
   );

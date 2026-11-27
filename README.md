@@ -11,6 +11,7 @@ An installable web app (PWA) with a Go API. Receipts are scanned on your own dev
 - **Expenses** with equal, exact, percentage or share-based splits, plus categories, filters, search and a monthly summary.
 - **Balances and settle up** with a running balance per friend.
 - **Pay with UPI.** Add your UPI ID, and when you owe a friend in INR the app opens your UPI app with the amount filled in. A payment waits for the friend to confirm it before the balance changes.
+- **Notifications.** An in-app bell and inbox, plus optional web push alerts on your device for friend requests, shared expenses and payments.
 - **Receipt scanning** from a photo or PDF, read locally with OCR.
 - **On-device AI** that rescues receipts the rules can't read and writes a grounded monthly roast.
 - **PWA** that is installable and has an offline fallback page.
@@ -23,6 +24,7 @@ An installable web app (PWA) with a Go API. Receipts are scanned on your own dev
 | Backend | Go, Gin |
 | Database | MongoDB (replica set, for transactions) |
 | Auth | Google OAuth 2.0, JWT in HTTP-only cookies |
+| Push | Web Push with VAPID (implemented in Go, no third-party service) |
 | OCR | Tesseract.js, pdf.js |
 | On-device AI | WebLLM (Qwen2.5 0.5B / 1.5B) |
 | Hosting | Vercel (frontend), Railway (API), MongoDB Atlas |

@@ -78,3 +78,47 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(staleWhileRevalidate(request));
   }
 });
+
+/* ---------- Web push ----------
+   The server sends a small JSON message: { title, body, link }. */
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+  const link = typeof data.link === "string" && data.link.startsWith("/") ? data.link : "/dashboard/notifications";
+  event.waitUntil(
+    self.registration.showNotification(data.title || "Pocksyra", {
+      body: data.body || "",
+      icon: "/pwa-icon/192",
+      badge: "/pwa-icon/192",
+      data: { link },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const link = (event.notification.data && event.notification.data.link) || "/dashboard/notifications";
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const w of windows) {
+        if ("focus" in w) {
+          await w.focus();
+          if ("navigate" in w) {
+            try {
+              await w.navigate(link);
+            } catch {
+              /* some browsers refuse; the focused window is still useful */
+            }
+          }
+          return;
+        }
+      }
+      await self.clients.openWindow(link);
+    })(),
+  );
+});

@@ -305,3 +305,11 @@ export const notificationsApi = {
   markRead: (id: string) => request<void>(`/api/notifications/${id}/read`, { method: "POST" }),
   markAllRead: () => request<void>("/api/notifications", { method: "PATCH" }),
 };
+
+export const pushApi = {
+  key: () => request<{ enabled: boolean; publicKey: string }>("/api/push/key"),
+  subscribe: (sub: { endpoint: string; keys: { p256dh: string; auth: string } }) =>
+    request<void>("/api/push/subscribe", { method: "POST", body: JSON.stringify(sub) }),
+  unsubscribe: (endpoint: string) =>
+    request<void>("/api/push/unsubscribe", { method: "POST", body: JSON.stringify({ endpoint }) }),
+};
