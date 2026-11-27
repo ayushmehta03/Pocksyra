@@ -21,6 +21,8 @@ const (
 	CollExpenses    = "expenses"
 	CollSettlements = "settlements"
 	CollBalances    = "balances"
+
+	CollNotifications = "notifications"
 )
 
 func Connect(ctx context.Context, uri string) (*mongo.Client, error) {
@@ -122,6 +124,15 @@ func EnsureIndexes(ctx context.Context, db *mongo.Database) error {
 		idem(bson.D{{Key: "createdBy", Value: 1}, {Key: "idempotencyKey", Value: 1}}),
 		{Keys: bson.D{{Key: "from", Value: 1}, {Key: "createdAt", Value: -1}}},
 		{Keys: bson.D{{Key: "to", Value: 1}, {Key: "createdAt", Value: -1}}},
+	})
+	if err != nil {
+		return err
+	}
+
+	// Notifications: my newest first, and old ones expire after 90 days.
+	_, err = db.Collection(CollNotifications).Indexes().CreateMany(ctx, []mongo.IndexModel{
+		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "createdAt", Value: -1}}},
+		{Keys: bson.D{{Key: "createdAt", Value: 1}}, Options: options.Index().SetExpireAfterSeconds(90 * 24 * 60 * 60)},
 	})
 	if err != nil {
 		return err
