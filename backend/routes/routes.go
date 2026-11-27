@@ -8,12 +8,14 @@ import (
 	"github.com/ayushmehta03/Pocksyra/backend/internal/auth"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/expenses"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/friends"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/notify"
 )
 
 type Deps struct {
 	Auth     *auth.Handler
 	Friends  *friends.Handler
 	Expenses *expenses.Handler
+	Notify   *notify.Handler
 }
 
 func Setup(r *gin.Engine, d Deps) {
@@ -56,5 +58,10 @@ func Setup(r *gin.Engine, d Deps) {
 		protected.POST("/settlements/:id/confirm", d.Expenses.ConfirmSettlement)
 		protected.POST("/settlements/:id/decline", d.Expenses.DeclineSettlement)
 		protected.POST("/settlements/:id/cancel", d.Expenses.CancelSettlement)
+
+		protected.GET("/notifications", d.Notify.List)
+		protected.GET("/notifications/unread", d.Notify.Unread)
+		protected.PATCH("/notifications", d.Notify.MarkAllRead)
+		protected.POST("/notifications/:id/read", d.Notify.MarkRead)
 	}
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/ayushmehta03/Pocksyra/backend/internal/auth"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/expenses"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/friends"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/notify"
 	"github.com/ayushmehta03/Pocksyra/backend/routes"
 )
 
@@ -65,11 +66,16 @@ func main() {
 	r.Use(gin.Logger(), gin.Recovery())
 
 	authSvc := auth.NewService(db, cfg)
+	notifySvc := notify.NewService(db)
 	expSvc := expenses.NewService(db)
+	expSvc.SetNotifier(notifySvc)
+	friendsSvc := friends.NewService(db, cfg)
+	friendsSvc.SetNotifier(notifySvc)
 	routes.Setup(r, routes.Deps{
 		Auth:     auth.NewHandler(authSvc, cfg),
-		Friends:  friends.NewHandler(friends.NewService(db, cfg)),
+		Friends:  friends.NewHandler(friendsSvc),
 		Expenses: expenses.NewHandler(expSvc),
+		Notify:   notify.NewHandler(notifySvc),
 	})
 
 	// Safety net: rebuild balances from the books once after boot, then daily.

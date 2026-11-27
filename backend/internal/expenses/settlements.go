@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"github.com/ayushmehta03/Pocksyra/backend/internal/ledger"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/notify"
 	"github.com/ayushmehta03/Pocksyra/backend/models"
 )
 
@@ -163,7 +164,26 @@ func (s *Service) CreateSettlement(ctx context.Context, me bson.ObjectID, key st
 		}
 		return SettlementView{}, err
 	}
+	s.notifyNewSettlement(ctx, me, m)
 	return settlementView(m), nil
+}
+
+// notifyNewSettlement tells the other person about a payment I just recorded.
+func (s *Service) notifyNewSettlement(ctx context.Context, me bson.ObjectID, m models.Settlement) {
+	amount := notify.Money(m.Amount, m.Currency)
+	ev := notify.Event{Actor: me, Link: "/dashboard/settle"}
+	switch {
+	case m.Status == models.SettlementPending:
+		ev.To, ev.Type = m.To, notify.TypePaymentPending
+		ev.Message = notify.ActorToken + " says they paid you " + amount + ". Confirm it once the money has arrived."
+	case m.From == me:
+		ev.To, ev.Type = m.To, notify.TypePaymentRecorded
+		ev.Message = notify.ActorToken + " recorded a payment of " + amount + " to you."
+	default:
+		ev.To, ev.Type = m.From, notify.TypePaymentRecorded
+		ev.Message = notify.ActorToken + " recorded that you paid them " + amount + "."
+	}
+	s.notify(ctx, ev)
 }
 
 // ListSettlements returns payments I made or received, newest first,
@@ -206,25 +226,25 @@ func (s *Service) ListSettlements(ctx context.Context, me bson.ObjectID, friend 
 // ConfirmSettlement is the receiver saying the money arrived. The payment is
 // marked confirmed and the balance moves in the same transaction.
 func (s *Service) ConfirmSettlement(ctx context.Context, me, id bson.ObjectID) (SettlementView, error) {
-	return s.decide(ctx, id, bson.M{"to": me}, models.SettlementConfirmed)
+	return s.decide(ctx, me, id, bson.M{"to": me}, models.SettlementConfirmed)
 }
 
 // DeclineSettlement is the receiver saying the money never arrived. Balances
 // are untouched.
 func (s *Service) DeclineSettlement(ctx context.Context, me, id bson.ObjectID) (SettlementView, error) {
-	return s.decide(ctx, id, bson.M{"to": me}, models.SettlementDeclined)
+	return s.decide(ctx, me, id, bson.M{"to": me}, models.SettlementDeclined)
 }
 
 // CancelSettlement lets the payer withdraw a payment nobody has answered yet.
 func (s *Service) CancelSettlement(ctx context.Context, me, id bson.ObjectID) (SettlementView, error) {
-	return s.decide(ctx, id, bson.M{"createdBy": me}, models.SettlementCancelled)
+	return s.decide(ctx, me, id, bson.M{"createdBy": me}, models.SettlementCancelled)
 }
 
 // decide moves a pending settlement to its final status. who restricts which
 // person may do it (the receiver, or the payer when cancelling). The status
 // check and the update are one atomic operation, so two quick taps can't apply
 // the same payment twice.
-func (s *Service) decide(ctx context.Context, id bson.ObjectID, who bson.M, to string) (SettlementView, error) {
+func (s *Service) decide(ctx context.Context, me, id bson.ObjectID, who bson.M, to string) (SettlementView, error) {
 	filter := bson.M{"_id": id, "status": models.SettlementPending}
 	for k, v := range who {
 		filter[k] = v
@@ -250,5 +270,26 @@ func (s *Service) decide(ctx context.Context, id bson.ObjectID, who bson.M, to s
 	if err != nil {
 		return SettlementView{}, err
 	}
+	s.notifyDecision(ctx, me, m, to)
 	return settlementView(m), nil
+}
+
+// notifyDecision tells the other person how a pending payment was answered.
+func (s *Service) notifyDecision(ctx context.Context, me bson.ObjectID, m models.Settlement, status string) {
+	amount := notify.Money(m.Amount, m.Currency)
+	ev := notify.Event{Actor: me, Link: "/dashboard/settle"}
+	switch status {
+	case models.SettlementConfirmed:
+		ev.To, ev.Type = m.From, notify.TypePaymentConfirmed
+		ev.Message = notify.ActorToken + " confirmed your " + amount + " payment."
+	case models.SettlementDeclined:
+		ev.To, ev.Type = m.From, notify.TypePaymentDeclined
+		ev.Message = notify.ActorToken + " says they didn't receive your " + amount + " payment."
+	case models.SettlementCancelled:
+		ev.To, ev.Type = m.To, notify.TypePaymentCancelled
+		ev.Message = notify.ActorToken + " cancelled their " + amount + " payment."
+	default:
+		return
+	}
+	s.notify(ctx, ev)
 }

@@ -17,6 +17,7 @@ import (
 
 	"github.com/ayushmehta03/Pocksyra/backend/config"
 	"github.com/ayushmehta03/Pocksyra/backend/database"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/notify"
 	"github.com/ayushmehta03/Pocksyra/backend/models"
 )
 
@@ -42,6 +43,17 @@ type Service struct {
 	invites     *mongo.Collection
 	balances    *mongo.Collection
 	cfg         config.Config
+	notifier    notify.Sender
+}
+
+// SetNotifier lets the service tell people about friend requests and accepts.
+// It is optional; without one nothing is sent.
+func (s *Service) SetNotifier(n notify.Sender) { s.notifier = n }
+
+func (s *Service) notify(ctx context.Context, e notify.Event) {
+	if s.notifier != nil {
+		s.notifier.Send(ctx, e)
+	}
 }
 
 func NewService(db *mongo.Database, cfg config.Config) *Service {
@@ -232,6 +244,10 @@ func (s *Service) SendRequest(ctx context.Context, me bson.ObjectID, email, user
 		return e, false, err
 	}
 	f.ID = res.InsertedID.(bson.ObjectID)
+	s.notify(ctx, notify.Event{
+		To: target.ID, Actor: me, Type: notify.TypeFriendRequest,
+		Message: notify.ActorToken + " sent you a friend request", Link: "/dashboard/friends",
+	})
 	return entry(f, target), false, nil
 }
 
@@ -255,6 +271,10 @@ func (s *Service) Accept(ctx context.Context, me, id bson.ObjectID) (Entry, erro
 	if err != nil {
 		return Entry{}, err
 	}
+	s.notify(ctx, notify.Event{
+		To: f.RequestedBy, Actor: me, Type: notify.TypeFriendAccepted,
+		Message: notify.ActorToken + " accepted your friend request", Link: "/dashboard/friends",
+	})
 	return s.entryFor(ctx, f, me)
 }
 
@@ -424,5 +444,9 @@ func (s *Service) AcceptInvite(ctx context.Context, me bson.ObjectID, token stri
 	if err := s.friendships.FindOne(ctx, bson.M{"userLow": low, "userHigh": high}).Decode(&f); err != nil {
 		return Entry{}, err
 	}
+	s.notify(ctx, notify.Event{
+		To: inv.InviterID, Actor: me, Type: notify.TypeFriendAccepted,
+		Message: notify.ActorToken + " joined through your invite link. You're now friends.", Link: "/dashboard/friends",
+	})
 	return s.entryFor(ctx, f, me)
 }

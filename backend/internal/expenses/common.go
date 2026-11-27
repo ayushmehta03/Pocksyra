@@ -16,6 +16,7 @@ import (
 	"github.com/ayushmehta03/Pocksyra/backend/database"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/friends"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/ledger"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/notify"
 	"github.com/ayushmehta03/Pocksyra/backend/models"
 )
 
@@ -42,6 +43,17 @@ type Service struct {
 	expenses    *mongo.Collection
 	settlements *mongo.Collection
 	balances    *mongo.Collection
+	notifier    notify.Sender
+}
+
+// SetNotifier lets the service tell people about expenses and payments that
+// involve them. It is optional; without one nothing is sent.
+func (s *Service) SetNotifier(n notify.Sender) { s.notifier = n }
+
+func (s *Service) notify(ctx context.Context, e notify.Event) {
+	if s.notifier != nil {
+		s.notifier.Send(ctx, e)
+	}
 }
 
 func NewService(db *mongo.Database) *Service {

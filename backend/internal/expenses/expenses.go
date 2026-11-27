@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"github.com/ayushmehta03/Pocksyra/backend/internal/ledger"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/notify"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/split"
 	"github.com/ayushmehta03/Pocksyra/backend/models"
 )
@@ -268,7 +269,27 @@ func (s *Service) Create(ctx context.Context, me bson.ObjectID, key string, in E
 		}
 		return ExpenseDetail{}, err
 	}
+	s.notifyExpenseAdded(ctx, me, e)
 	return s.detail(ctx, e)
+}
+
+// notifyExpenseAdded tells everyone else in a new expense about it and what
+// they owe or are owed.
+func (s *Service) notifyExpenseAdded(ctx context.Context, me bson.ObjectID, e models.Expense) {
+	title := strings.TrimSpace(e.Description)
+	if title == "" {
+		title = strings.TrimSpace(e.Merchant)
+	}
+	if title == "" {
+		title = "an expense"
+	}
+	for _, sp := range e.Splits {
+		if sp.UserID == me || sp.Amount <= 0 {
+			continue
+		}
+		msg := notify.ActorToken + " added \"" + title + "\" and split it with you. Your share is " + notify.Money(sp.Amount, e.Currency) + "."
+		s.notify(ctx, notify.Event{To: sp.UserID, Actor: me, Type: notify.TypeExpenseAdded, Message: msg, Link: "/dashboard/expenses"})
+	}
 }
 
 func (s *Service) findByKey(ctx context.Context, me bson.ObjectID, key string) (*models.Expense, error) {
