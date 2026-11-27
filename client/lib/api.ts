@@ -304,6 +304,10 @@ export const notificationsApi = {
   unread: () => request<{ unread: number }>("/api/notifications/unread"),
   markRead: (id: string) => request<void>(`/api/notifications/${id}/read`, { method: "POST" }),
   markAllRead: () => request<void>("/api/notifications", { method: "PATCH" }),
+  /** The groups of notification I have switched off. */
+  preferences: () => request<{ muted: string[] }>("/api/notifications/preferences"),
+  setPreferences: (muted: string[]) =>
+    request<{ muted: string[] }>("/api/notifications/preferences", { method: "PUT", body: JSON.stringify({ muted }) }),
 };
 
 export const pushApi = {

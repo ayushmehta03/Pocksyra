@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Avatar } from "@/components/avatar";
+import { NotificationPreferencesCard } from "@/components/notifications/preferences-card";
 import { PushCard } from "@/components/notifications/push-card";
 import { useAuth } from "@/components/auth-provider";
 import { PageHeader } from "@/components/page-header";
@@ -167,8 +168,9 @@ export default function SettingsPage() {
           </div>
         </aside>
 
-        <div className="lg:col-span-3">
+        <div className="space-y-6 lg:col-span-3">
           <PushCard />
+          <NotificationPreferencesCard />
         </div>
       </div>
     </div>
