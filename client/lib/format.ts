@@ -38,6 +38,11 @@ export function greeting(date = new Date()): string {
   return "Good evening";
 }
 
+/** "12 Nov": for lists where the year is obvious. */
+export function formatShortDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+}
+
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
 }
