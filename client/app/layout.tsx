@@ -14,8 +14,9 @@ export const metadata: Metadata = {
   title: "Pocksyra",
   description: "Split expenses with friends, beautifully.",
   applicationName: "Pocksyra",
-  // iOS "Add to Home Screen" behaviour
-  appleWebApp: { capable: true, title: "Pocksyra", statusBarStyle: "black-translucent" },
+  // iOS "Add to Home Screen" behaviour. "default" makes iOS draw a solid status bar that follows the
+  // phone's light or dark setting, so the clock is readable in both modes (black-translucent is not).
+  appleWebApp: { capable: true, title: "Pocksyra", statusBarStyle: "default" },
   formatDetection: { telephone: false },
 };
 
@@ -25,6 +26,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
+  // On Android the on-screen keyboard shrinks the page instead of covering it.
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -72,6 +72,11 @@
 
 html {
   color-scheme: light;
+  /* The colour behind the page, so rubber-banding and over-scroll never flash white. */
+  background-color: var(--page);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html.dark {
@@ -79,6 +84,10 @@ html.dark {
 }
 
 body {
+  min-height: 100dvh;
+  /* `clip` (not `hidden`) stops sideways scroll without breaking sticky headers. */
+  overflow-x: clip;
+  overscroll-behavior-x: none;
   background-color: var(--page);
   color: var(--fg);
   font-feature-settings: "cv11", "ss01";
@@ -106,6 +115,11 @@ body {
 .num {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
+}
+
+/* No 300ms tap delay or double-tap zoom on controls. */
+a, button, input, select, textarea, label, summary, [role="button"], [role="tab"], [role="switch"] {
+  touch-action: manipulation;
 }
 
 select option {

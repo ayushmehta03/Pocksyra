@@ -121,7 +121,7 @@ export default function ExpensesPage() {
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search expenses"
                 aria-label="Search expenses"
-                className="w-full rounded-xl border border-wash/10 bg-panel-2 py-2.5 pl-10 pr-4 text-sm text-fg outline-none transition placeholder:text-fg-3 focus:border-accent focus:ring-4 focus:ring-accent/20"
+                className="w-full rounded-xl border border-wash/10 bg-panel-2 py-2.5 pl-10 pr-4 text-base text-fg sm:text-sm outline-none transition placeholder:text-fg-3 focus:border-accent focus:ring-4 focus:ring-accent/20"
               />
             </div>
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Filter by category">

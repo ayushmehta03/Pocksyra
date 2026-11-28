@@ -25,18 +25,18 @@ export function FriendRow({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -24 }}
       transition={{ duration: 0.3, ease: EASE }}
-      className="flex items-center gap-4 px-5 py-4"
+      className="flex flex-wrap items-center gap-x-4 gap-y-3 px-5 py-4"
     >
       {href ? (
-        <Link href={href} className="flex min-w-0 flex-1 items-center gap-4 rounded-xl outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-accent/50">
+        <Link href={href} className="flex min-w-0 flex-1 basis-40 items-center gap-4 rounded-xl outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-accent/50">
           <Person friend={friend} note={note} />
         </Link>
       ) : (
-        <div className="flex min-w-0 flex-1 items-center gap-4">
+        <div className="flex min-w-0 flex-1 basis-40 items-center gap-4">
           <Person friend={friend} note={note} />
         </div>
       )}
-      {children && <div className="flex shrink-0 items-center gap-2">{children}</div>}
+      {children && <div className="ml-auto flex shrink-0 items-center gap-2">{children}</div>}
     </m.li>
   );
 }

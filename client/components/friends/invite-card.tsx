@@ -69,7 +69,7 @@ export function InviteCard() {
                 value={link.url}
                 onFocus={(e) => e.target.select()}
                 aria-label="Invite link"
-                className="min-w-0 flex-1 rounded-xl border border-wash/10 bg-wash/[0.04] px-3.5 py-2.5 font-mono text-xs text-fg outline-none focus:border-accent"
+                className="min-w-0 flex-1 rounded-xl border border-wash/10 bg-wash/[0.04] px-3.5 py-2.5 font-mono text-base text-fg sm:text-xs outline-none focus:border-accent"
               />
               <Button variant="ghost" size="sm" onClick={copy} className="shrink-0">
                 {copied ? "Copied" : "Copy"}

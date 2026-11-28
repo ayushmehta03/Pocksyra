@@ -13,7 +13,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
       type="button"
       onClick={() => setPreference(dark ? "light" : "dark")}
       aria-label={dark ? "Switch to day mode" : "Switch to night mode"}
-      className={`relative flex h-10 w-10 items-center justify-center rounded-full text-fg-2 outline-none transition hover:bg-wash/[0.06] hover:text-fg focus-visible:ring-2 focus-visible:ring-accent/50 ${className}`}
+      className={`relative flex h-11 w-11 items-center justify-center rounded-full text-fg-2 outline-none transition hover:bg-wash/[0.06] hover:text-fg focus-visible:ring-2 focus-visible:ring-accent/50 ${className}`}
     >
       {/* Until the saved choice is known, show nothing rather than the wrong icon. */}
       {ready && (

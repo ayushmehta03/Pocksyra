@@ -9,7 +9,7 @@ import {
 import { ArrowRightIcon } from "@/components/icons";
 
 const inputBase =
-  "w-full rounded-xl border bg-panel-2 px-4 py-3 text-[15px] text-fg placeholder:text-fg-3 outline-none " +
+  "w-full rounded-xl border bg-panel-2 px-4 py-3 text-base text-fg sm:text-[15px] placeholder:text-fg-3 outline-none " +
   "transition focus:border-accent focus:ring-4 focus:ring-accent/20";
 
 const labelCls = "block text-[13px] font-medium tracking-wide text-fg-2";
@@ -124,7 +124,7 @@ export function FormError({ message }: { message?: string }) {
 
 export function Spinner({ label = "Loading" }: { label?: string }) {
   return (
-    <div className="flex min-h-screen items-center justify-center" role="status" aria-label={label}>
+    <div className="flex min-h-dvh items-center justify-center" role="status" aria-label={label}>
       <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-accent border-t-transparent" />
     </div>
   );

@@ -173,7 +173,7 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
                 aria-label="Currency"
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="rounded-full border-0 bg-wash/[0.07] py-1.5 pl-3 pr-2 text-sm font-semibold text-fg outline-none transition hover:bg-wash/10 focus:ring-4 focus:ring-accent/20"
+                className="rounded-full border-0 bg-wash/[0.07] py-1.5 pl-3 pr-2 text-base font-semibold text-fg outline-none transition hover:bg-wash/10 sm:text-sm focus:ring-4 focus:ring-accent/20"
               >
                 {(CURRENCIES.includes(currency) ? CURRENCIES : [currency, ...CURRENCIES]).map((c) => (
                   <option key={c}>{c}</option>
@@ -189,7 +189,7 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
                   setAmountText(e.target.value);
                   edited("amount");
                 }}
-                className="num w-full min-w-0 max-w-[13rem] bg-transparent text-center font-mono text-5xl font-semibold tracking-tight text-fg outline-none placeholder:text-fg-4"
+                className="num w-full min-w-0 max-w-[13rem] bg-transparent text-center font-mono text-4xl font-semibold sm:text-5xl tracking-tight text-fg outline-none placeholder:text-fg-4"
               />
             </div>
             {amountText.trim() && amountMinor === null ? (
@@ -385,7 +385,7 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
                         value={values[id] ?? (method === "shares" ? "1" : "")}
                         placeholder={method === "percent" ? "0 %" : method === "shares" ? "1" : "0.00"}
                         onChange={(e) => setValues((v) => ({ ...v, [id]: e.target.value }))}
-                        className="w-24 rounded-lg border border-wash/10 bg-panel-2 px-3 py-2 text-right font-mono text-sm text-fg outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20"
+                        className="w-24 rounded-lg border border-wash/10 bg-panel-2 px-3 py-2 text-right font-mono text-base text-fg sm:text-sm outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20"
                       />
                     )}
                     <span className="num w-28 text-right font-mono text-sm font-medium text-fg">

@@ -95,9 +95,9 @@ export function SettleRow({
 
   return (
     <li>
-      <div className="flex items-center gap-4 px-5 py-4">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3 px-5 py-4">
         <Avatar user={friend} className="h-11 w-11 shrink-0 text-sm" />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 basis-32">
           <p className="truncate text-sm font-semibold text-fg">{friend.name}</p>
           <p className="truncate text-xs text-fg-3">{theyOweMe ? "owes you" : "you owe them"}</p>
           {pendingOut > 0 && (

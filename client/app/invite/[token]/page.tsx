@@ -64,7 +64,7 @@ export default function InvitePage() {
   if (loading || !user || (!preview && !invalid && !error)) return <Spinner />;
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 py-12">
+    <div className="flex min-h-dvh items-center justify-center px-6 py-12 pb-[calc(3rem+env(safe-area-inset-bottom))] pt-[calc(3rem+env(safe-area-inset-top))]">
       <FadeUp className="w-full max-w-md space-y-8">
         <div className="flex justify-center">
           <Logo />

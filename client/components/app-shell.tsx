@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Avatar } from "@/components/avatar";
 import { useAuth } from "@/components/auth-provider";
 import { Logo } from "@/components/auth-shell";
@@ -88,10 +88,33 @@ export function AppShell(props: { user: User; children: ReactNode }) {
   );
 }
 
+/**
+ * True while a text box has focus. On phones the on-screen keyboard would push the
+ * fixed tab bar up over the form, so the bar slides out of the way while typing.
+ */
+function useTyping(): boolean {
+  const [typing, setTyping] = useState(false);
+  useEffect(() => {
+    const isField = (el: EventTarget | null) =>
+      el instanceof HTMLElement && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.tagName === "SELECT") &&
+      !["checkbox", "radio", "button", "submit", "file"].includes((el as HTMLInputElement).type);
+    const on = (e: FocusEvent) => isField(e.target) && setTyping(true);
+    const off = () => setTyping(false);
+    document.addEventListener("focusin", on);
+    document.addEventListener("focusout", off);
+    return () => {
+      document.removeEventListener("focusin", on);
+      document.removeEventListener("focusout", off);
+    };
+  }, []);
+  return typing;
+}
+
 function ShellContent({ user, children }: { user: User; children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuth();
+  const typing = useTyping();
 
   async function onLogout() {
     await logout();
@@ -99,7 +122,7 @@ function ShellContent({ user, children }: { user: User; children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-dvh pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       <a
         href="#main"
         className="sr-only z-50 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
@@ -163,14 +186,16 @@ function ShellContent({ user, children }: { user: User; children: ReactNode }) {
         </div>
       </header>
 
-      <main id="main" tabIndex={-1} className="outline-none px-5 pb-32 pt-8 sm:px-8 lg:ml-64 lg:px-12 lg:pb-16 lg:pt-12">
+      <main id="main" tabIndex={-1} className="outline-none px-4 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-6 min-[400px]:px-5 min-[400px]:pt-8 sm:px-8 lg:ml-64 lg:px-12 lg:pb-16 lg:pt-12">
         <div className="mx-auto max-w-5xl">{children}</div>
       </main>
 
       {/* Mobile bottom tab bar */}
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-wash/10 bg-panel/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+        className={`fixed inset-x-0 bottom-0 z-30 border-t border-wash/10 bg-panel/90 pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] backdrop-blur-xl transition-transform duration-200 lg:hidden ${
+          typing ? "translate-y-full" : ""
+        }`}
       >
         <ul className="mx-auto flex max-w-md items-end justify-around px-2 pt-2">
           {TABS.slice(0, 2).map((item) => (
