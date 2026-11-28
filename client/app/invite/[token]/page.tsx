@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { useAuth } from "@/components/auth-provider";
 import { Logo } from "@/components/auth-shell";
+import { FadeUp } from "@/components/motion";
 import { Button, FormError, Spinner } from "@/components/ui";
 import { ApiError, errorMessage, friendsApi, type InvitePreview } from "@/lib/api";
 import { PENDING_INVITE_KEY } from "@/lib/invite";
@@ -64,7 +65,7 @@ export default function InvitePage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center px-6 py-12">
-      <div className="w-full max-w-md animate-fade-up space-y-8">
+      <FadeUp className="w-full max-w-md space-y-8">
         <div className="flex justify-center">
           <Logo />
         </div>
@@ -122,7 +123,7 @@ export default function InvitePage() {
             </>
           )}
         </div>
-      </div>
+      </FadeUp>
     </div>
   );
 }
