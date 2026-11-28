@@ -7,7 +7,8 @@ import { CategoryIcon, categoryTone } from "@/components/category-icon";
 import { EmptyState, ListSkeleton } from "@/components/empty-state";
 import { ExpenseRow } from "@/components/expenses/expense-row";
 import { ExpenseSummary, myShare } from "@/components/expenses/expense-summary";
-import { PlusIcon, ReceiptIcon, SparkIcon } from "@/components/icons";
+import { PlusIcon, ReceiptIcon, SearchIcon, SparkIcon } from "@/components/icons";
+import { EASE, FadeUp, m } from "@/components/motion";
 import { PageHeader } from "@/components/page-header";
 import { Button, FormError } from "@/components/ui";
 import { errorMessage, expensesApi, type Expense } from "@/lib/api";
@@ -107,17 +108,22 @@ export default function ExpensesPage() {
         </EmptyState>
       ) : (
         <>
-          <ExpenseSummary expenses={expenses} meId={user.id} active={category} onPick={setCategory} />
+          <FadeUp>
+            <ExpenseSummary expenses={expenses} meId={user.id} active={category} onPick={setCategory} />
+          </FadeUp>
 
           <div className="space-y-3">
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search expenses"
-              aria-label="Search expenses"
-              className="w-full rounded-xl border border-wash/10 bg-wash/[0.04] px-4 py-2.5 text-sm text-fg outline-none placeholder:text-fg-3 focus:border-jade-400/50"
-            />
+            <div className="relative">
+              <SearchIcon width={16} height={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-3" />
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search expenses"
+                aria-label="Search expenses"
+                className="w-full rounded-xl border border-wash/10 bg-panel-2 py-2.5 pl-10 pr-4 text-sm text-fg outline-none transition placeholder:text-fg-3 focus:border-accent focus:ring-4 focus:ring-accent/20"
+              />
+            </div>
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Filter by category">
               <button
                 type="button"
@@ -138,7 +144,7 @@ export default function ExpensesPage() {
                     onClick={() => setCategory(on ? "all" : id)}
                     aria-pressed={on}
                     className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                      on ? "bg-fg text-page" : `${categoryTone(id).chip} hover:brightness-125`
+                      on ? "bg-fg text-page" : `${categoryTone(id).chip} hover:brightness-95 dark:hover:brightness-125`
                     }`}
                   >
                     <CategoryIcon id={id} width={14} height={14} />
@@ -152,22 +158,28 @@ export default function ExpensesPage() {
           {groups.length === 0 ? (
             <p className="py-10 text-center text-sm text-fg-3">Nothing matches. Try another category or search.</p>
           ) : (
-            <div className="space-y-5">
-              {groups.map(([key, items]) => {
+            <div className="space-y-6">
+              {groups.map(([key, items], gi) => {
                 const currency = items[0]!.currency;
                 const dayShare = items.filter((e) => e.currency === currency).reduce((n, e) => n + myShare(e, user.id), 0);
                 return (
-                  <section key={key} aria-label={dayLabel(key)}>
+                  <m.section
+                    key={key}
+                    aria-label={dayLabel(key)}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, ease: EASE, delay: Math.min(gi, 6) * 0.05 }}
+                  >
                     <div className="mb-2 flex items-baseline justify-between px-1">
-                      <h2 className="text-xs font-semibold uppercase tracking-wider text-fg-2">{dayLabel(key)}</h2>
-                      {dayShare > 0 && <span className="font-mono text-xs text-fg-3">your share {formatMoney(dayShare, currency)}</span>}
+                      <h2 className="text-sm font-semibold text-fg">{dayLabel(key)}</h2>
+                      {dayShare > 0 && <span className="num font-mono text-xs text-fg-3">your share {formatMoney(dayShare, currency)}</span>}
                     </div>
-                    <ul className="surface divide-y divide-wash/[0.06]">
+                    <ul className="surface divide-y divide-wash/[0.06] overflow-hidden">
                       {items.map((e) => (
                         <ExpenseRow key={e.id} expense={e} people={people} meId={user.id} onDelete={remove} />
                       ))}
                     </ul>
-                  </section>
+                  </m.section>
                 );
               })}
             </div>

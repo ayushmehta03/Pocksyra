@@ -1,6 +1,8 @@
 "use client";
 
 import { categoryTone } from "@/components/category-icon";
+import { CountUp } from "@/components/count-up";
+import { EASE, m } from "@/components/motion";
 import type { Expense } from "@/lib/api";
 import { categoryLabel } from "@/lib/categories";
 import { formatMoney } from "@/lib/format";
@@ -51,20 +53,26 @@ export function ExpenseSummary({
     <section className="surface space-y-5 p-5" aria-label="This month">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-wider text-fg-3">Your share this month</p>
-          <p className="mt-1 font-mono text-2xl font-semibold text-fg">{formatMoney(share, currency)}</p>
+          <p className="text-xs font-medium text-fg-3">Your share this month</p>
+          <CountUp value={share} format={(n) => formatMoney(n, currency)} className="num mt-1 block font-mono text-3xl font-semibold tracking-tight text-fg" />
         </div>
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-wider text-fg-3">You paid</p>
-          <p className="mt-1 font-mono text-2xl font-semibold text-fg">{formatMoney(paid, currency)}</p>
+          <p className="text-xs font-medium text-fg-3">You paid</p>
+          <CountUp value={paid} format={(n) => formatMoney(n, currency)} className="num mt-1 block font-mono text-3xl font-semibold tracking-tight text-fg-2" />
         </div>
       </div>
 
       {cats.length > 0 && (
         <div className="space-y-3">
-          <div className="flex h-2 overflow-hidden rounded-full bg-wash/10" role="img" aria-label="Spending by category">
-            {cats.map(([id, amount]) => (
-              <div key={id} className={categoryTone(id).bar} style={{ width: `${(amount / share) * 100}%` }} />
+          <div className="flex h-2 gap-0.5 overflow-hidden rounded-full bg-wash/10" role="img" aria-label="Spending by category">
+            {cats.map(([id, amount], i) => (
+              <m.div
+                key={id}
+                className={categoryTone(id).bar}
+                initial={{ width: 0 }}
+                animate={{ width: `${(amount / share) * 100}%` }}
+                transition={{ duration: 0.7, ease: EASE, delay: 0.1 + i * 0.06 }}
+              />
             ))}
           </div>
           <ul className="flex flex-wrap gap-x-4 gap-y-2">
@@ -73,7 +81,7 @@ export function ExpenseSummary({
                 <button
                   type="button"
                   onClick={() => onPick(active === id ? "all" : id)}
-                  className={`flex items-center gap-1.5 rounded-md text-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-jade-400/40 ${
+                  className={`flex items-center gap-1.5 rounded-md text-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent/40 ${
                     active === id ? "text-fg" : "text-fg-2 hover:text-fg"
                   }`}
                 >

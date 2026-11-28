@@ -139,3 +139,14 @@ export const MonitorIcon = (p: P) => (
     <path d="M8 20h8M12 16v4" />
   </Icon>
 );
+export const ChevronDownIcon = (p: P) => (
+  <Icon {...p}>
+    <path d="m6 9 6 6 6-6" />
+  </Icon>
+);
+export const SearchIcon = (p: P) => (
+  <Icon {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m20 20-3.6-3.6" />
+  </Icon>
+);
