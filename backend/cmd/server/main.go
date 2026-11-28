@@ -20,6 +20,7 @@ import (
 	"github.com/ayushmehta03/Pocksyra/backend/internal/expenses"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/friends"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/notify"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/profiles"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/push"
 	"github.com/ayushmehta03/Pocksyra/backend/routes"
 )
@@ -87,6 +88,7 @@ func main() {
 		Expenses: expenses.NewHandler(expSvc),
 		Notify:   notify.NewHandler(notifySvc),
 		Push:     push.NewHandler(pushSvc),
+		Profiles: profiles.NewHandler(profiles.NewService(db)),
 	})
 
 	// Safety net: rebuild balances from the books once after boot, then daily.

@@ -115,6 +115,7 @@ func EnsureIndexes(ctx context.Context, db *mongo.Database) error {
 	_, err = db.Collection(CollExpenses).Indexes().CreateMany(ctx, []mongo.IndexModel{
 		idem(bson.D{{Key: "createdBy", Value: 1}, {Key: "idempotencyKey", Value: 1}}),
 		{Keys: bson.D{{Key: "paidBy", Value: 1}, {Key: "date", Value: -1}}},
+		{Keys: bson.D{{Key: "createdBy", Value: 1}, {Key: "createdAt", Value: -1}}}, // counting what someone has added
 		{Keys: bson.D{{Key: "splits.userId", Value: 1}, {Key: "date", Value: -1}}},
 	})
 	if err != nil {

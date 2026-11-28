@@ -9,6 +9,7 @@ import (
 	"github.com/ayushmehta03/Pocksyra/backend/internal/expenses"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/friends"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/notify"
+	"github.com/ayushmehta03/Pocksyra/backend/internal/profiles"
 	"github.com/ayushmehta03/Pocksyra/backend/internal/push"
 )
 
@@ -18,6 +19,7 @@ type Deps struct {
 	Expenses *expenses.Handler
 	Notify   *notify.Handler
 	Push     *push.Handler
+	Profiles *profiles.Handler
 }
 
 func Setup(r *gin.Engine, d Deps) {
@@ -39,6 +41,8 @@ func Setup(r *gin.Engine, d Deps) {
 		protected.PATCH("/me", d.Auth.UpdateMe)
 
 		protected.GET("/friends", d.Friends.List)
+		protected.GET("/friends/suggestions", d.Profiles.Suggestions)
+		protected.GET("/profiles/:id", d.Profiles.Get)
 		protected.POST("/friends/requests", d.Friends.SendRequest)
 		protected.POST("/friends/requests/:id/accept", d.Friends.Accept)
 		protected.POST("/friends/requests/:id/decline", d.Friends.Decline)
