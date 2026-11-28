@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { AddFriendForm } from "@/components/friends/add-friend-form";
 import { FriendsPanel } from "@/components/friends/friends-panel";
 import { InviteCard } from "@/components/friends/invite-card";
 import { RequestsPanel } from "@/components/friends/requests-panel";
 import { SuggestionsPanel } from "@/components/friends/suggestions-panel";
 import { ListSkeleton } from "@/components/empty-state";
+import { EASE, FadeUp, m } from "@/components/motion";
 import { PageHeader } from "@/components/page-header";
 import { Button, FormError } from "@/components/ui";
 import { ApiError, errorMessage, friendsApi } from "@/lib/api";
@@ -17,6 +18,7 @@ type Tab = "friends" | "requests";
 export default function FriendsPage() {
   const { data, loading, error, reload } = useFriends();
   const [tab, setTab] = useState<Tab>("friends");
+  const pillId = useId();
   const [actionError, setActionError] = useState("");
   // Set when unfriending was refused because money is still owed.
   const [forceId, setForceId] = useState<string | null>(null);
@@ -67,6 +69,7 @@ export default function FriendsPage() {
         subtitle="The friends you split expenses with."
       />
 
+      <FadeUp>
       <section className="grid gap-4 lg:grid-cols-5" aria-label="Add friends">
         <div className="lg:col-span-3">
           <AddFriendForm onSent={reload} />
@@ -75,10 +78,11 @@ export default function FriendsPage() {
           <InviteCard />
         </div>
       </section>
+      </FadeUp>
 
       <SuggestionsPanel onSent={reload} />
 
-      <div role="tablist" aria-label="Friends and requests" className="inline-flex rounded-xl border border-wash/10 bg-wash/[0.04] p-1">
+      <div role="tablist" aria-label="Friends and requests" className="inline-flex rounded-xl bg-wash/[0.06] p-1">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -87,14 +91,21 @@ export default function FriendsPage() {
             aria-selected={tab === t.id}
             aria-controls={`panel-${t.id}`}
             onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-jade-400/50 ${
-              tab === t.id ? "bg-wash/10 text-fg" : "text-fg-2 hover:text-fg"
+            className={`relative flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent/50 ${
+              tab === t.id ? "text-fg" : "text-fg-2 hover:text-fg"
             }`}
           >
-            {t.label}
+            {tab === t.id && (
+              <m.span
+                layoutId={`${pillId}-tab`}
+                className="absolute inset-0 rounded-lg bg-panel shadow-sm ring-1 ring-wash/10"
+                transition={{ duration: 0.3, ease: EASE }}
+              />
+            )}
+            <span className="relative">{t.label}</span>
             <span
-              className={`rounded-full px-2 py-0.5 font-mono text-[10px] ${
-                t.highlight ? "bg-jade-400 text-accent-ink" : "bg-wash/[0.08] text-fg-2"
+              className={`relative rounded-full px-2 py-0.5 font-mono text-[10px] ${
+                t.highlight ? "bg-accent text-accent-ink" : "bg-wash/[0.08] text-fg-2"
               }`}
             >
               {t.count}
@@ -123,7 +134,15 @@ export default function FriendsPage() {
         </div>
       )}
 
-      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
+      <m.div
+        key={tab}
+        role="tabpanel"
+        id={`panel-${tab}`}
+        aria-labelledby={`tab-${tab}`}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: EASE }}
+      >
         {loading && !data ? (
           <ListSkeleton />
         ) : tab === "friends" ? (
@@ -137,7 +156,7 @@ export default function FriendsPage() {
             onCancel={(id) => run(() => friendsApi.remove(id))}
           />
         )}
-      </div>
+      </m.div>
     </div>
   );
 }

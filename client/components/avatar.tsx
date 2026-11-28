@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { initials } from "@/lib/format";
 
-/** Google profile photo when available, gradient initials otherwise. */
+/** Google profile photo when available, initials otherwise. */
 export function Avatar({
   user,
   className = "h-10 w-10 text-sm",
@@ -27,7 +27,7 @@ export function Avatar({
   }
   return (
     <span
-      className={`flex items-center justify-center rounded-full bg-gradient-to-br from-jade-300 to-gold-300 font-bold text-accent-ink ring-2 ring-wash/10 ${className}`}
+      className={`flex items-center justify-center rounded-full bg-accent/15 font-semibold text-accent-text ring-2 ring-wash/10 ${className}`}
     >
       {initials(user.name)}
     </span>

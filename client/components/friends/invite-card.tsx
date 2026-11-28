@@ -54,7 +54,6 @@ export function InviteCard() {
 
   return (
     <div className="surface relative flex h-full flex-col overflow-hidden p-6">
-      <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-500/15 blur-[60px]" />
       <h2 className="relative text-base font-semibold tracking-tight text-fg">Invite with a link</h2>
       <p className="relative mt-1 text-xs leading-relaxed text-fg-3">
         For friends who aren&apos;t on Pocksyra yet. Each link works once and expires in 7 days.
@@ -70,7 +69,7 @@ export function InviteCard() {
                 value={link.url}
                 onFocus={(e) => e.target.select()}
                 aria-label="Invite link"
-                className="min-w-0 flex-1 rounded-xl border border-wash/10 bg-wash/[0.04] px-3.5 py-2.5 font-mono text-xs text-fg outline-none focus:border-jade-400/70"
+                className="min-w-0 flex-1 rounded-xl border border-wash/10 bg-wash/[0.04] px-3.5 py-2.5 font-mono text-xs text-fg outline-none focus:border-accent"
               />
               <Button variant="ghost" size="sm" onClick={copy} className="shrink-0">
                 {copied ? "Copied" : "Copy"}

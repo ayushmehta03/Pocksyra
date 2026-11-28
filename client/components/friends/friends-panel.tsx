@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { UsersIcon } from "@/components/icons";
+import { AnimatePresence } from "@/components/motion";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui";
 import { FriendRow } from "@/components/friends/friend-row";
@@ -63,7 +64,8 @@ export function FriendsPanel({
     );
   }
   return (
-    <ul className="surface divide-y divide-wash/[0.06]">
+    <ul className="surface divide-y divide-wash/[0.06] overflow-hidden">
+      <AnimatePresence initial={false}>
       {friends.map((e) => (
         <FriendRow
           key={e.id}
@@ -74,6 +76,7 @@ export function FriendsPanel({
           <RemoveButton onRemove={() => onRemove(e.id)} />
         </FriendRow>
       ))}
+      </AnimatePresence>
     </ul>
   );
 }

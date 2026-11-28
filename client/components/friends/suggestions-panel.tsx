@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { AnimatePresence, EASE, m } from "@/components/motion";
 import { Button, FormError } from "@/components/ui";
 import { errorMessage, friendsApi, type Suggestion } from "@/lib/api";
 
@@ -70,11 +71,20 @@ export function SuggestionsPanel({ onSent }: { onSent: () => Promise<void> | voi
     <section className="space-y-3" aria-label="People you may know">
       <h2 className="text-sm font-semibold text-fg">People you may know</h2>
       <FormError message={error} />
-      <ul className="surface divide-y divide-wash/[0.06]">
+      <ul className="surface divide-y divide-wash/[0.06] overflow-hidden">
+        <AnimatePresence initial={false}>
         {items.map((s) => {
           const requested = sent.has(s.user.id);
           return (
-            <li key={s.user.id} className="flex items-center gap-4 px-5 py-4">
+            <m.li
+              key={s.user.id}
+              layout="position"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: 24 }}
+              transition={{ duration: 0.3, ease: EASE }}
+              className="flex items-center gap-4 px-5 py-4"
+            >
               <Avatar user={s.user} className="h-11 w-11 shrink-0 text-sm" />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-fg">{s.user.name}</p>
@@ -98,9 +108,10 @@ export function SuggestionsPanel({ onSent }: { onSent: () => Promise<void> | voi
                   </>
                 )}
               </div>
-            </li>
+            </m.li>
           );
         })}
+        </AnimatePresence>
       </ul>
     </section>
   );

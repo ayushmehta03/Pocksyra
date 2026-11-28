@@ -50,7 +50,7 @@ export function AddFriendForm({ onSent }: { onSent: () => void }) {
   return (
     <form onSubmit={submit} noValidate className="surface space-y-5 p-6">
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-jade-400/15 text-accent-text">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent-text">
           <UserPlusIcon width={20} height={20} />
         </span>
         <div>
@@ -71,7 +71,7 @@ export function AddFriendForm({ onSent }: { onSent: () => void }) {
 
       <FormError message={error} />
       {success && (
-        <div role="status" className="rounded-xl border border-jade-400/30 bg-jade-400/10 px-4 py-3 text-sm text-accent-text">
+        <div role="status" className="rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm font-medium text-accent-text">
           {success}
         </div>
       )}

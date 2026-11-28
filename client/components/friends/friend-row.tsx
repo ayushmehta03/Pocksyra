@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Avatar } from "@/components/avatar";
+import { EASE, m } from "@/components/motion";
 import type { FriendEntry } from "@/lib/api";
 
 /** One person in a list: avatar, name, @username, optional note, action slot. */
@@ -18,9 +19,16 @@ export function FriendRow({
 }) {
   const { friend } = entry;
   return (
-    <li className="flex items-center gap-4 px-5 py-4">
+    <m.li
+      layout="position"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -24 }}
+      transition={{ duration: 0.3, ease: EASE }}
+      className="flex items-center gap-4 px-5 py-4"
+    >
       {href ? (
-        <Link href={href} className="flex min-w-0 flex-1 items-center gap-4 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-jade-400/50">
+        <Link href={href} className="flex min-w-0 flex-1 items-center gap-4 rounded-xl outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-accent/50">
           <Person friend={friend} note={note} />
         </Link>
       ) : (
@@ -29,7 +37,7 @@ export function FriendRow({
         </div>
       )}
       {children && <div className="flex shrink-0 items-center gap-2">{children}</div>}
-    </li>
+    </m.li>
   );
 }
 
