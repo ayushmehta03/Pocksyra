@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ScanIcon } from "@/components/icons";
+import { EASE, m } from "@/components/motion";
 import { Button } from "@/components/ui";
 import { formatDate } from "@/lib/format";
 import { modelDownloadLabel } from "@/lib/llm/engine";
@@ -124,7 +125,7 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
   return (
     <div className="surface space-y-4 p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-accent-text ring-1 ring-wash/10">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent-text">
           <ScanIcon width={20} height={20} />
         </span>
 
@@ -139,7 +140,7 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
             <div className="mt-1 space-y-2">
               <p className="text-xs text-fg-2">{friendly(state.progress)}</p>
               <div className="h-1.5 overflow-hidden rounded-full bg-wash/10" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
-                <div className="h-full rounded-full bg-gradient-to-r from-jade-400 to-gold-300 transition-all" style={{ width: `${Math.max(pct, 4)}%` }} />
+                <m.div className="h-full rounded-full bg-accent" initial={false} animate={{ width: `${Math.max(pct, 4)}%` }} transition={{ duration: 0.4, ease: EASE }} />
               </div>
             </div>
           )}
@@ -177,7 +178,13 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
       </div>
 
       {ai.kind !== "none" && (
-        <div className="rounded-xl bg-wash/[0.04] p-4 text-xs leading-relaxed text-fg-2" aria-live="polite">
+        <m.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: EASE }}
+          className="rounded-xl bg-wash/[0.05] p-4 text-xs leading-relaxed text-fg-2"
+          aria-live="polite"
+        >
           {ai.kind === "unsupported" && (
             <p>Some fields couldn&apos;t be read. This browser can&apos;t run on-device AI (it needs WebGPU), so please fill them in by hand.</p>
           )}
@@ -195,7 +202,7 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
             <div className="space-y-2">
               <p>{ai.progress < 1 ? "Getting the AI ready…" : "Reading the receipt…"} {ai.text && <span className="text-fg-3">{ai.text}</span>}</p>
               <div className="h-1.5 overflow-hidden rounded-full bg-wash/10" role="progressbar" aria-valuenow={Math.round(ai.progress * 100)} aria-valuemin={0} aria-valuemax={100}>
-                <div className="h-full rounded-full bg-gradient-to-r from-jade-400 to-gold-300 transition-all" style={{ width: `${Math.max(Math.round(ai.progress * 100), 4)}%` }} />
+                <m.div className="h-full rounded-full bg-accent" initial={false} animate={{ width: `${Math.max(Math.round(ai.progress * 100), 4)}%` }} transition={{ duration: 0.4, ease: EASE }} />
               </div>
             </div>
           )}
@@ -218,7 +225,7 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
               </Button>
             </div>
           )}
-        </div>
+        </m.div>
       )}
     </div>
   );

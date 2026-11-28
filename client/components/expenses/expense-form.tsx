@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import { Avatar } from "@/components/avatar";
 import { useAuth } from "@/components/auth-provider";
+import { CategoryIcon } from "@/components/category-icon";
+import { CheckIcon } from "@/components/icons";
+import { AnimatePresence, EASE, FadeUp, m } from "@/components/motion";
 import { ScanReceipt } from "@/components/receipt/scan-receipt";
 import { Button, Field, FormError, SelectField } from "@/components/ui";
 import {
@@ -58,6 +61,7 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
   const [receiptConfidence, setReceiptConfidence] = useState<number | null>(null);
   const [values, setValues] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const methodId = useId();
   const [error, setError] = useState("");
   const keyRef = useRef<{ sig: string; key: string } | null>(null);
   // Fields pre-filled by the receipt scanner that the reader wasn't sure about.
@@ -155,75 +159,119 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
   const nameOf = (id: string) => everyone.find((p) => p.id === id)?.name ?? "Someone";
 
   return (
-    <form onSubmit={submit} className="space-y-8" noValidate>
+    <form onSubmit={submit} className="space-y-6" noValidate>
       <ScanReceipt onResult={applyScan} />
 
-      <div className="surface space-y-5 p-6">
-        <Field
-          label="What was it for?"
-          placeholder="Dinner at Toscana"
-          value={description}
-          maxLength={120}
-          onChange={(e) => {
-            setDescription(e.target.value);
-            edited("description");
-          }}
-          warn={unsure.description}
-          hint={unsure.description ? "Read from the receipt; please double-check." : undefined}
-        />
-        <div className="grid gap-5 sm:grid-cols-[1fr_8rem_10rem]">
-          <Field
-            label="Amount"
-            inputMode="decimal"
-            placeholder="0.00"
-            value={amountText}
-            onChange={(e) => {
-              setAmountText(e.target.value);
-              edited("amount");
-            }}
-            warn={unsure.amount}
-            hint={unsure.amount ? "Please double-check this total." : undefined}
-            error={amountText.trim() && amountMinor === null ? "Invalid amount" : undefined}
-            className="font-mono"
-          />
-          <SelectField label="Currency" value={currency} onChange={(e) => setCurrency(e.target.value)}>
-            {(CURRENCIES.includes(currency) ? CURRENCIES : [currency, ...CURRENCIES]).map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </SelectField>
-          <Field
-            label="Date"
-            type="date"
-            value={date}
-            max={today()}
-            warn={unsure.date}
-            onChange={(e) => {
-              setDate(e.target.value);
-              edited("date");
-            }}
-          />
-        </div>
-        <div className="grid gap-5 sm:grid-cols-2">
-          <SelectField label="Category" value={category} onChange={(e) => setCategory(e.target.value)}>
-            {CATEGORIES.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </SelectField>
-          <Field
-            label="Merchant (optional)"
-            placeholder="Toscana Bistro"
-            value={merchant}
-            maxLength={80}
-            onChange={(e) => setMerchant(e.target.value)}
-          />
-        </div>
-      </div>
+      <FadeUp>
+        <section className="surface overflow-hidden" aria-label="Amount and details">
+          <div className={`px-6 pb-7 pt-6 text-center transition-colors ${unsure.amount ? "bg-warn/[0.07]" : ""}`}>
+            <label htmlFor="expense-amount" className="text-xs font-medium text-fg-3">
+              How much was it?
+            </label>
+            <div className="mt-3 flex items-center justify-center gap-3">
+              <select
+                aria-label="Currency"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="rounded-full border-0 bg-wash/[0.07] py-1.5 pl-3 pr-2 text-sm font-semibold text-fg outline-none transition hover:bg-wash/10 focus:ring-4 focus:ring-accent/20"
+              >
+                {(CURRENCIES.includes(currency) ? CURRENCIES : [currency, ...CURRENCIES]).map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
+              </select>
+              <input
+                id="expense-amount"
+                inputMode="decimal"
+                placeholder="0.00"
+                value={amountText}
+                aria-invalid={amountText.trim() !== "" && amountMinor === null}
+                onChange={(e) => {
+                  setAmountText(e.target.value);
+                  edited("amount");
+                }}
+                className="num w-full min-w-0 max-w-[13rem] bg-transparent text-center font-mono text-5xl font-semibold tracking-tight text-fg outline-none placeholder:text-fg-4"
+              />
+            </div>
+            {amountText.trim() && amountMinor === null ? (
+              <p className="mt-2 text-xs font-medium text-danger">Invalid amount</p>
+            ) : unsure.amount ? (
+              <p className="mt-2 text-xs font-medium text-warn">Please double-check this total.</p>
+            ) : null}
+          </div>
+
+          <div className="space-y-5 border-t border-wash/[0.08] p-6">
+            <Field
+              label="What was it for?"
+              placeholder="Dinner at Toscana"
+              value={description}
+              maxLength={120}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                edited("description");
+              }}
+              warn={unsure.description}
+              hint={unsure.description ? "Read from the receipt; please double-check." : undefined}
+            />
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field
+                label="Date"
+                type="date"
+                value={date}
+                max={today()}
+                warn={unsure.date}
+                onChange={(e) => {
+                  setDate(e.target.value);
+                  edited("date");
+                }}
+              />
+              <Field
+                label="Merchant (optional)"
+                placeholder="Toscana Bistro"
+                value={merchant}
+                maxLength={80}
+                onChange={(e) => setMerchant(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <p id="expense-category-label" className="text-[13px] font-medium tracking-wide text-fg-2">
+                Category
+              </p>
+              <div
+                role="radiogroup"
+                aria-labelledby="expense-category-label"
+                className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+              >
+                {CATEGORIES.map((c) => {
+                  const on = category === c.id;
+                  return (
+                    <button
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      key={c.id}
+                      onClick={() => setCategory(c.id)}
+                      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium outline-none transition focus-visible:ring-4 focus-visible:ring-accent/25 ${
+                        on
+                          ? "border-accent bg-accent/10 text-fg"
+                          : "border-wash/10 bg-transparent text-fg-2 hover:bg-wash/5"
+                      }`}
+                    >
+                      <CategoryIcon id={c.id} width={14} height={14} />
+                      {c.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+      </FadeUp>
 
       <section className="surface space-y-4 p-6" aria-label="Who is sharing">
         <div>
-          <h2 className="text-sm font-semibold text-fg">Split with <span className="font-normal text-fg-3">(optional)</span></h2>
+          <h2 className="text-sm font-semibold text-fg">
+            Split with <span className="font-normal text-fg-3">(optional)</span>
+          </h2>
           <p className="mt-1 text-xs text-fg-3">Leave everyone unselected to log it as just your own expense.</p>
         </div>
         {friendsLoading ? (
@@ -246,14 +294,26 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
                   key={f.id}
                   aria-pressed={on}
                   onClick={() => toggle(f.id)}
-                  className={`flex items-center gap-2.5 rounded-full border py-1.5 pl-1.5 pr-4 text-sm font-medium outline-none transition focus-visible:ring-4 focus-visible:ring-jade-400/25 ${
-                    on
-                      ? "border-jade-400/60 bg-jade-400/15 text-fg"
-                      : "border-wash/10 bg-wash/[0.04] text-fg-2 hover:bg-wash/[0.08]"
+                  className={`flex items-center gap-2.5 rounded-full border py-1.5 pl-1.5 pr-4 text-sm font-medium outline-none transition active:scale-[0.97] focus-visible:ring-4 focus-visible:ring-accent/25 ${
+                    on ? "border-accent bg-accent/10 text-fg" : "border-wash/10 bg-transparent text-fg-2 hover:bg-wash/5"
                   }`}
                 >
                   <Avatar user={f} className="h-7 w-7 text-[10px]" />
                   {f.name}
+                  <AnimatePresence initial={false}>
+                    {on && (
+                      <m.span
+                        key="tick"
+                        initial={{ scale: 0, width: 0 }}
+                        animate={{ scale: 1, width: 16 }}
+                        exit={{ scale: 0, width: 0 }}
+                        transition={{ duration: 0.2, ease: EASE }}
+                        className="flex h-4 items-center justify-center text-accent-text"
+                      >
+                        <CheckIcon width={16} height={16} />
+                      </m.span>
+                    )}
+                  </AnimatePresence>
                 </button>
               );
             })}
@@ -271,57 +331,81 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
         )}
       </section>
 
-      {selected.size > 0 && (
-        <section className="surface space-y-5 p-6" aria-label="How to split">
-          <div>
-            <h2 className="text-sm font-semibold text-fg">How to split</h2>
-            <div role="tablist" className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-wash/[0.05] p-1">
-              {METHODS.map((m) => (
-                <button
-                  type="button"
-                  role="tab"
-                  key={m.id}
-                  aria-selected={method === m.id}
-                  onClick={() => setMethod(m.id)}
-                  className={`rounded-lg px-2 py-2 text-xs font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-jade-400/40 ${
-                    method === m.id ? "bg-jade-400 text-accent-ink" : "text-fg-2 hover:text-fg"
-                  }`}
-                >
-                  {m.label}
-                </button>
-              ))}
+      <AnimatePresence initial={false}>
+        {selected.size > 0 && (
+          <m.section
+            key="split"
+            className="surface space-y-5 p-6"
+            aria-label="How to split"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.3, ease: EASE }}
+          >
+            <div>
+              <h2 className="text-sm font-semibold text-fg">How to split</h2>
+              <div role="tablist" className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-wash/[0.06] p-1">
+                {METHODS.map((opt) => (
+                  <button
+                    type="button"
+                    role="tab"
+                    key={opt.id}
+                    aria-selected={method === opt.id}
+                    onClick={() => setMethod(opt.id)}
+                    className={`relative rounded-lg px-2 py-2 text-xs font-semibold outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent/40 ${
+                      method === opt.id ? "text-fg" : "text-fg-2 hover:text-fg"
+                    }`}
+                  >
+                    {method === opt.id && (
+                      <m.span
+                        layoutId={`${methodId}-method`}
+                        className="absolute inset-0 rounded-lg bg-panel shadow-sm ring-1 ring-wash/10"
+                        transition={{ duration: 0.3, ease: EASE }}
+                      />
+                    )}
+                    <span className="relative">{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-fg-3">{METHODS.find((opt) => opt.id === method)?.hint}</p>
             </div>
-            <p className="mt-2 text-xs text-fg-3">{METHODS.find((m) => m.id === method)?.hint}</p>
-          </div>
 
-          <ul className="divide-y divide-wash/[0.06]">
-            {participantIds.map((id) => {
-              const person = everyone.find((p) => p.id === id)!;
-              const share = result?.ok ? result.shares.get(id) : undefined;
-              return (
-                <li key={id} className="flex items-center gap-3 py-3">
-                  <Avatar user={person} className="h-9 w-9 shrink-0 text-xs" />
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg">{person.name}</span>
-                  {method !== "equal" && (
-                    <input
-                      aria-label={`${person.name}: ${method}`}
-                      inputMode="decimal"
-                      value={values[id] ?? (method === "shares" ? "1" : "")}
-                      placeholder={method === "percent" ? "0 %" : method === "shares" ? "1" : "0.00"}
-                      onChange={(e) => setValues((v) => ({ ...v, [id]: e.target.value }))}
-                      className="w-24 rounded-lg border border-wash/10 bg-wash/[0.04] px-3 py-2 text-right font-mono text-sm text-fg outline-none focus:border-jade-400/70"
-                    />
-                  )}
-                  <span className="w-28 text-right font-mono text-sm text-accent-text">
-                    {share !== undefined ? formatMoney(share, currency) : "—"}
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-          {splitError && amountText.trim() && <p className="text-xs font-medium text-warn">{splitError}</p>}
-        </section>
-      )}
+            <ul className="divide-y divide-wash/[0.06]">
+              {participantIds.map((id) => {
+                const person = everyone.find((p) => p.id === id)!;
+                const share = result?.ok ? result.shares.get(id) : undefined;
+                return (
+                  <li key={id} className="flex items-center gap-3 py-3">
+                    <Avatar user={person} className="h-9 w-9 shrink-0 text-xs" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg">{person.name}</span>
+                    {method !== "equal" && (
+                      <input
+                        aria-label={`${person.name}: ${method}`}
+                        inputMode="decimal"
+                        value={values[id] ?? (method === "shares" ? "1" : "")}
+                        placeholder={method === "percent" ? "0 %" : method === "shares" ? "1" : "0.00"}
+                        onChange={(e) => setValues((v) => ({ ...v, [id]: e.target.value }))}
+                        className="w-24 rounded-lg border border-wash/10 bg-panel-2 px-3 py-2 text-right font-mono text-sm text-fg outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20"
+                      />
+                    )}
+                    <span className="num w-28 text-right font-mono text-sm font-medium text-fg">
+                      {share !== undefined ? formatMoney(share, currency) : "—"}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+            {splitError && amountText.trim() ? (
+              <p className="text-xs font-medium text-warn">{splitError}</p>
+            ) : result?.ok && amountMinor ? (
+              <p className="flex items-center gap-1.5 text-xs font-medium text-accent-text">
+                <CheckIcon width={14} height={14} />
+                Adds up to {formatMoney(amountMinor, currency)}
+              </p>
+            ) : null}
+          </m.section>
+        )}
+      </AnimatePresence>
 
       <FormError message={error} />
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
