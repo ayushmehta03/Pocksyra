@@ -69,6 +69,7 @@ export function FriendsPanel({
           key={e.id}
           entry={e}
           note={e.acceptedAt ? `friends since ${formatDate(e.acceptedAt)}` : undefined}
+          href={`/dashboard/people/${e.friend.id}`}
         >
           <RemoveButton onRemove={() => onRemove(e.id)} />
         </FriendRow>

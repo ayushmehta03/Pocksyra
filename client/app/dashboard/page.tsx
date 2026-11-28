@@ -16,6 +16,7 @@ import {
   WalletIcon,
 } from "@/components/icons";
 import { PageHeader } from "@/components/page-header";
+import { MyLevelCard } from "@/components/profile/my-level-card";
 import { InstallCard } from "@/components/pwa/install-card";
 import { usePwa } from "@/components/pwa/pwa-provider";
 import { PendingNotice } from "@/components/settle/pending-notice";
@@ -176,6 +177,7 @@ export default function OverviewPage() {
       <PendingNotice />
 
       <UpiCard />
+      <MyLevelCard />
 
       <InstallCard />
 

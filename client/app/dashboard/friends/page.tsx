@@ -5,6 +5,7 @@ import { AddFriendForm } from "@/components/friends/add-friend-form";
 import { FriendsPanel } from "@/components/friends/friends-panel";
 import { InviteCard } from "@/components/friends/invite-card";
 import { RequestsPanel } from "@/components/friends/requests-panel";
+import { SuggestionsPanel } from "@/components/friends/suggestions-panel";
 import { ListSkeleton } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Button, FormError } from "@/components/ui";
@@ -74,6 +75,8 @@ export default function FriendsPage() {
           <InviteCard />
         </div>
       </section>
+
+      <SuggestionsPanel onSent={reload} />
 
       <div role="tablist" aria-label="Friends and requests" className="inline-flex rounded-xl border border-white/10 bg-white/[0.04] p-1">
         {tabs.map((t) => (
