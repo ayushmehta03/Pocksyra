@@ -15,13 +15,14 @@ An installable web app (PWA) with a Go API. Receipts are scanned on your own dev
 - **Levels and profiles.** Experience from using the app (shared expenses, settled payments, friends, confirming quickly) earns a level and badges. Friends can view each other's profile, which shows no money details. "People you may know" suggests friends of friends.
 - **Receipt scanning** from a photo or PDF, read locally with OCR.
 - **On-device AI** that rescues receipts the rules can't read and writes a grounded monthly roast.
-- **PWA** that is installable and has an offline fallback page.
+- **Day and night mode** with a clean fintech look and smooth Framer Motion animations. It follows your device or can be set by hand.
+- **Installable PWA** that fits any screen (phone, tablet or desktop), respects notches and the keyboard, and has an offline fallback page.
 
 ## Tech stack
 
 | Part | What |
 |---|---|
-| Frontend | Next.js 15, React 19, TypeScript, Tailwind CSS 4 |
+| Frontend | Next.js 15, React 19, TypeScript, Tailwind CSS 4, Framer Motion |
 | Backend | Go, Gin |
 | Database | MongoDB (replica set, for transactions) |
 | Auth | Google OAuth 2.0, JWT in HTTP-only cookies |
