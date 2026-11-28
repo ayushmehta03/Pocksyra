@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Avatar } from "@/components/avatar";
@@ -7,10 +8,11 @@ import { AppearanceCard } from "@/components/appearance-card";
 import { NotificationPreferencesCard } from "@/components/notifications/preferences-card";
 import { PushCard } from "@/components/notifications/push-card";
 import { useAuth } from "@/components/auth-provider";
+import { Stagger, StaggerItem } from "@/components/motion";
 import { PageHeader } from "@/components/page-header";
 import { Button, Field, FormError, SelectField } from "@/components/ui";
 import { errorMessage } from "@/lib/api";
-import { LogoutIcon } from "@/components/icons";
+import { ArrowRightIcon, LogoutIcon } from "@/components/icons";
 import { formatDate } from "@/lib/format";
 import { UPI_HINT, isValidUpi, normalizeUpi } from "@/lib/upi";
 
@@ -80,19 +82,22 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-10">
+    <Stagger className="space-y-8">
+      <StaggerItem>
       <PageHeader
         eyebrow="Settings"
         title="Your account"
         subtitle="Manage how you appear and how Pocksyra shows your money."
       />
+      </StaggerItem>
 
+      <StaggerItem>
       <div className="grid gap-6 lg:grid-cols-5">
         <form onSubmit={onSave} className="surface space-y-6 p-6 sm:p-8 lg:col-span-3">
           <h2 className="text-lg font-semibold tracking-tight text-fg">Profile</h2>
           <FormError message={error} />
           {message && (
-            <div role="status" className="rounded-xl border border-jade-400/30 bg-jade-400/10 px-4 py-3 text-sm text-accent-text">
+            <div role="status" className="rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent-text">
               {message}
             </div>
           )}
@@ -133,7 +138,6 @@ export default function SettingsPage() {
 
         <aside className="lg:col-span-2 lg:row-span-2">
           <div className="surface relative overflow-hidden p-6">
-            <div className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-jade-500/25 blur-[70px]" />
             <div className="relative flex items-center gap-4">
               <Avatar user={user} className="h-14 w-14 text-lg" />
               <div className="min-w-0">
@@ -155,13 +159,20 @@ export default function SettingsPage() {
                 <dd className="text-fg">Google</dd>
               </div>
             </dl>
+            <Link
+              href="/dashboard/people/me"
+              className="relative mt-6 flex items-center justify-between rounded-xl bg-wash/[0.05] px-4 py-3 text-sm font-medium text-fg outline-none transition hover:bg-wash/[0.08] focus-visible:ring-2 focus-visible:ring-accent/40"
+            >
+              View your level and badges
+              <ArrowRightIcon width={16} height={16} className="text-fg-3" />
+            </Link>
             <button
               type="button"
               onClick={async () => {
                 await logout();
                 router.replace("/login");
               }}
-              className="relative mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-wash/10 px-3 py-2.5 text-sm font-medium text-fg-2 transition hover:bg-wash/[0.06] hover:text-fg"
+              className="relative mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-wash/10 px-3 py-2.5 text-sm font-medium text-fg-2 transition hover:bg-wash/[0.06] hover:text-fg"
             >
               <LogoutIcon width={16} height={16} />
               Log out
@@ -175,6 +186,7 @@ export default function SettingsPage() {
           <NotificationPreferencesCard />
         </div>
       </div>
-    </div>
+      </StaggerItem>
+    </Stagger>
   );
 }

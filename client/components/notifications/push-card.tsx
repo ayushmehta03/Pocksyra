@@ -54,7 +54,7 @@ export function PushCard() {
   return (
     <div className="surface space-y-4 p-6 sm:p-8">
       <div className="flex items-start gap-4">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-accent-text ring-1 ring-wash/10">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent-text">
           <BellIcon width={20} height={20} />
         </span>
         <div className="min-w-0">

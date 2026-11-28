@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Switch } from "@/components/switch";
 import { FormError } from "@/components/ui";
 import { notificationsApi } from "@/lib/api";
 import { NOTIFICATION_GROUPS, isEnabled, withGroup } from "@/lib/notification-prefs";
@@ -56,7 +57,7 @@ export function NotificationPreferencesCard() {
       </div>
       <FormError message={error} />
       {muted !== null && (
-        <ul className="divide-y divide-wash/10">
+        <ul className="divide-y divide-wash/[0.08]">
           {NOTIFICATION_GROUPS.map((g) => {
             const on = isEnabled(muted, g.key);
             return (
@@ -65,23 +66,7 @@ export function NotificationPreferencesCard() {
                   <p className="text-sm font-medium text-fg">{g.label}</p>
                   <p className="text-xs leading-relaxed text-fg-2">{g.hint}</p>
                 </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={on}
-                  aria-label={g.label}
-                  disabled={saving}
-                  onClick={() => toggle(g.key)}
-                  className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-60 ${
-                    on ? "bg-jade-400" : "bg-wash/15"
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
-                      on ? "left-[1.375rem]" : "left-0.5"
-                    }`}
-                  />
-                </button>
+                <Switch checked={on} label={g.label} disabled={saving} onChange={() => toggle(g.key)} />
               </li>
             );
           })}
