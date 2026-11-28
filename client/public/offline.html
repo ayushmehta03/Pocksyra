@@ -3,24 +3,28 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#06100d">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#09090b">
 <title>Offline · Pocksyra</title>
 <style>
   *{box-sizing:border-box}
-  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
-    background:radial-gradient(60% 50% at 50% 0%,rgba(25,184,135,.18),transparent),#06100d;
-    color:#f3efe4;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;text-align:center}
+  :root{--page:#fafafa;--fg:#09090b;--fg2:#52525b;--accent:#22c55e;--ink:#052e16}
+  @media (prefers-color-scheme:dark){:root{--page:#09090b;--fg:#fafafa;--fg2:#a1a1aa}}
+  html{background:var(--page)}
+  body{margin:0;min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
+    padding:max(24px,env(safe-area-inset-top)) max(24px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));
+    background:var(--page);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;text-align:center}
   .card{max-width:360px}
-  .mark{width:64px;height:64px;margin:0 auto 24px;border-radius:16px;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(135deg,#7ce6c0,#19b887 55%,#0c7a58);color:#06100d;font-size:34px;font-weight:700}
-  h1{font-size:22px;margin:0 0 8px}
-  p{margin:0 0 24px;color:rgba(243,239,228,.65);line-height:1.5;font-size:15px}
-  button{background:#19b887;color:#06100d;border:0;border-radius:12px;padding:12px 22px;font-size:15px;font-weight:600;cursor:pointer}
+  .mark{display:block;margin:0 auto 24px;border-radius:18px;box-shadow:0 12px 32px -12px rgba(0,0,0,.45)}
+  h1{font-size:22px;letter-spacing:-.01em;margin:0 0 8px}
+  p{margin:0 0 24px;color:var(--fg2);line-height:1.5;font-size:15px}
+  button{background:var(--accent);color:var(--ink);border:0;border-radius:12px;padding:13px 24px;min-height:44px;font:inherit;font-size:15px;font-weight:600;cursor:pointer;touch-action:manipulation}
+  button:active{transform:scale(.98)}
 </style>
 </head>
 <body>
   <div class="card">
-    <div class="mark">P</div>
+    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" class="mark" role="img" aria-label="Pocksyra" viewBox="0 0 512 512"><defs><linearGradient id="pk-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1a1e"/><stop offset="1" stop-color="#09090b"/></linearGradient><radialGradient id="pk-glow" cx="0.22" cy="0.12" r="0.85"><stop offset="0" stop-color="#22c55e" stop-opacity="0.34"/><stop offset="0.55" stop-color="#22c55e" stop-opacity="0.06"/><stop offset="1" stop-color="#22c55e" stop-opacity="0"/></radialGradient><linearGradient id="pk-up" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4ade80"/><stop offset="1" stop-color="#22c55e"/></linearGradient><linearGradient id="pk-low" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#d4d4d8"/></linearGradient><filter id="pk-blur" filterUnits="userSpaceOnUse" x="-300" y="-300" width="1200" height="1200"><feGaussianBlur stdDeviation="24"/></filter><clipPath id="pk-clip"><path d="M-100 -100 H700 V212 H222 V700 H-100 Z"/></clipPath></defs><rect width="512" height="512" rx="112" fill="url(#pk-bg)"/><rect width="512" height="512" rx="112" fill="url(#pk-glow)"/><rect x="1.5" y="1.5" width="509" height="509" rx="110.5" fill="none" stroke="#ffffff" stroke-opacity="0.09" stroke-width="3"/><g transform="translate(256 256) scale(1) translate(-272 -260)"><path d="M190 392 V128 H270 A84 84 0 0 1 270 296 H190" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="64" stroke="#22c55e" opacity="0.4" filter="url(#pk-blur)"/><path d="M190 392 V128 H270 A84 84 0 0 1 270 296 H190" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="64" stroke="url(#pk-low)"/><path d="M190 392 V128 H270 A84 84 0 0 1 270 296 H190" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="64" stroke="url(#pk-up)" clip-path="url(#pk-clip)"/></g></svg>
     <h1>You're offline</h1>
     <p>Pocksyra can't reach the network right now. Pages you've already opened are still available; reconnect to sync the rest.</p>
     <button onclick="location.reload()">Try again</button>

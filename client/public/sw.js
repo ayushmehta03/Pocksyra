@@ -1,12 +1,12 @@
 /* Pocksyra service worker: app-shell caching and an offline fallback.
    Authenticated data (/auth, /api, /me) is never cached. */
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL = `pocksyra-shell-${VERSION}`;
 const STATIC = `pocksyra-static-${VERSION}`;
 const PAGES = `pocksyra-pages-${VERSION}`;
 const KEEP = [SHELL, STATIC, PAGES];
 const MAX_PAGES = 30;
-const PRECACHE = ["/offline.html", "/pwa-icon/192", "/pwa-icon/512"];
+const PRECACHE = ["/offline.html", "/icons/icon-192.png", "/icons/icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(SHELL).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
@@ -74,7 +74,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(networkFirstPage(request));
   } else if (p.startsWith("/_next/static/")) {
     event.respondWith(cacheFirst(request));
-  } else if (p.startsWith("/pwa-icon/") || p === "/manifest.webmanifest" || p === "/offline.html") {
+  } else if (p.startsWith("/icons/") || p === "/manifest.webmanifest" || p === "/offline.html") {
     event.respondWith(staleWhileRevalidate(request));
   }
 });
@@ -92,8 +92,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title || "Pocksyra", {
       body: data.body || "",
-      icon: "/pwa-icon/192",
-      badge: "/pwa-icon/192",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/badge-96.png",
       data: { link },
     }),
   );

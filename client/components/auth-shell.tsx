@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { CategoryTile } from "@/components/category-icon";
 import { CountUp } from "@/components/count-up";
+import { LogoMark } from "@/components/logo-mark";
 import { LockIcon, ReceiptIcon, ScanIcon, SwapIcon } from "@/components/icons";
 import { EASE, FadeUp, m } from "@/components/motion";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -11,9 +12,7 @@ import { formatMoney } from "@/lib/format";
 export function Logo() {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-base font-bold text-accent-ink">
-        P
-      </span>
+      <LogoMark size={32} className="shrink-0 rounded-lg" />
       <span className="text-[17px] font-semibold tracking-tight text-fg">Pocksyra</span>
     </div>
   );
@@ -135,7 +134,7 @@ export function AuthShell({
   footer: ReactNode;
 }) {
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
+    <div className="grid min-h-dvh pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] pt-[env(safe-area-inset-top)] lg:grid-cols-[1.1fr_1fr]">
       {/* Hero */}
       <aside className="relative hidden border-r border-wash/10 bg-panel-2 p-12 text-fg lg:flex lg:flex-col lg:justify-between xl:p-16">
         <Logo />
