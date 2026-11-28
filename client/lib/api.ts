@@ -49,6 +49,33 @@ export type FriendList = {
   outgoing: FriendEntry[];
 };
 
+/** Where someone stands, worked out by the server from what they've done in the app. */
+export type Level = {
+  level: number;
+  title: string;
+  xp: number;
+  /** XP at which this level started */
+  levelXp: number;
+  /** XP at which the next level starts; null at the top level */
+  nextLevelXp: number | null;
+};
+
+export type Badge = { id: string; label: string; description: string; earned: boolean };
+
+/** What a person's friends can see: experience and badges, never money. */
+export type Profile = {
+  user: PublicUser;
+  memberSince: string;
+  level: Level;
+  badges: Badge[];
+  friends: number;
+  /** friends in common with me; missing on my own profile */
+  mutualFriends?: number;
+  isSelf: boolean;
+};
+
+export type Suggestion = { user: PublicUser; mutualFriends: number };
+
 export type InviteLink = { token: string; url: string; expiresAt: string };
 export type InvitePreview = { inviter: PublicUser; expiresAt: string; own: boolean };
 
@@ -122,6 +149,8 @@ export const api = {
 
 export const friendsApi = {
   list: () => request<FriendList>("/api/friends"),
+  /** friends of my friends, the ones we share the most friends with first */
+  suggestions: () => request<{ suggestions: Suggestion[] }>("/api/friends/suggestions").then((r) => r.suggestions),
   sendRequest: (target: { email?: string; username?: string }) =>
     request<{ friendship: FriendEntry; autoAccepted: boolean }>("/api/friends/requests", {
       method: "POST",
@@ -316,4 +345,9 @@ export const pushApi = {
     request<void>("/api/push/subscribe", { method: "POST", body: JSON.stringify(sub) }),
   unsubscribe: (endpoint: string) =>
     request<void>("/api/push/unsubscribe", { method: "POST", body: JSON.stringify({ endpoint }) }),
+};
+
+export const profilesApi = {
+  /** My profile ("me") or a friend's; anyone else is a 404. */
+  get: (id: string) => request<{ profile: Profile }>(`/api/profiles/${encodeURIComponent(id)}`).then((r) => r.profile),
 };
