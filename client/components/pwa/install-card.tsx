@@ -31,8 +31,8 @@ export function InstallCard() {
   };
 
   return (
-    <div className="surface relative flex flex-col gap-4 p-5 ring-1 ring-jade-400/25 sm:flex-row sm:items-center">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-accent-text ring-1 ring-wash/10">
+    <div className="surface relative flex flex-col gap-4 p-5 ring-1 ring-accent/25 sm:flex-row sm:items-center">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent-text">
         <DownloadIcon width={20} height={20} />
       </span>
       <div className="min-w-0 flex-1">

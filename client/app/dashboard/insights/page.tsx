@@ -151,7 +151,7 @@ export default function InsightsPage() {
                   <div className="space-y-2" aria-live="polite">
                     <p className="text-xs text-fg-3">{progress.text || "Starting…"}</p>
                     <div className="h-1.5 overflow-hidden rounded-full bg-wash/10" role="progressbar" aria-valuenow={Math.round(progress.value * 100)} aria-valuemin={0} aria-valuemax={100}>
-                      <div className="h-full rounded-full bg-gradient-to-r from-jade-400 to-gold-300 transition-all" style={{ width: `${Math.max(Math.round(progress.value * 100), 4)}%` }} />
+                      <div className="h-full rounded-full bg-accent transition-all" style={{ width: `${Math.max(Math.round(progress.value * 100), 4)}%` }} />
                     </div>
                   </div>
                 )}

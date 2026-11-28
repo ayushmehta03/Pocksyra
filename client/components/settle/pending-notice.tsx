@@ -32,9 +32,9 @@ export function PendingNotice() {
   return (
     <Link
       href="/dashboard/settle"
-      className="surface group relative flex items-center gap-4 p-4 outline-none ring-1 ring-jade-400/25 transition hover:ring-jade-400/50 focus-visible:ring-2 focus-visible:ring-jade-400/60"
+      className="surface group relative flex items-center gap-4 p-4 outline-none ring-1 ring-accent/25 transition hover:ring-accent/50 focus-visible:ring-2 focus-visible:ring-accent/60"
     >
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-jade-400/15 text-accent-text">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent-text">
         <SwapIcon width={20} height={20} />
       </span>
       <div className="min-w-0">
