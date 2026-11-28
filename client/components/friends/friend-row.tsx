@@ -49,7 +49,7 @@ function Person({ friend, note }: { friend: FriendEntry["friend"]; note?: string
         <p className="truncate text-sm font-semibold text-fg">{friend.name}</p>
         <p className="truncate text-xs text-fg-3">
           @{friend.username}
-          {note && <span className="text-fg-4"> · {note}</span>}
+          {note && <span className="text-fg-3"> · {note}</span>}
         </p>
       </div>
     </>

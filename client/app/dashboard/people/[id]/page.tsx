@@ -122,7 +122,7 @@ export default function ProfilePage() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-fg">{b.label}</p>
                   <p className="text-xs leading-relaxed text-fg-2">{b.description}</p>
-                  {!b.earned && <p className="mt-1 text-[11px] text-fg-4">Not earned yet</p>}
+                  {!b.earned && <p className="mt-1 text-[11px] text-fg-3">Not earned yet</p>}
                 </div>
               </li>
             ))}

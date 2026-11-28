@@ -100,6 +100,12 @@ function ShellContent({ user, children }: { user: User; children: ReactNode }) {
 
   return (
     <div className="min-h-screen">
+      <a
+        href="#main"
+        className="sr-only z-50 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+      >
+        Skip to content
+      </a>
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-wash/10 bg-panel px-4 py-5 lg:flex">
         <div className="flex items-center justify-between px-2 pb-6">
@@ -157,7 +163,7 @@ function ShellContent({ user, children }: { user: User; children: ReactNode }) {
         </div>
       </header>
 
-      <main className="px-5 pb-32 pt-8 sm:px-8 lg:ml-64 lg:px-12 lg:pb-16 lg:pt-12">
+      <main id="main" tabIndex={-1} className="outline-none px-5 pb-32 pt-8 sm:px-8 lg:ml-64 lg:px-12 lg:pb-16 lg:pt-12">
         <div className="mx-auto max-w-5xl">{children}</div>
       </main>
 

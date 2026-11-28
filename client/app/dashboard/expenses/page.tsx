@@ -129,7 +129,7 @@ export default function ExpensesPage() {
                 type="button"
                 onClick={() => setCategory("all")}
                 aria-pressed={category === "all"}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent/40 ${
                   category === "all" ? "bg-fg text-page" : "bg-wash/[0.06] text-fg-2 hover:bg-wash/10"
                 }`}
               >
@@ -143,7 +143,7 @@ export default function ExpensesPage() {
                     type="button"
                     onClick={() => setCategory(on ? "all" : id)}
                     aria-pressed={on}
-                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent/40 ${
                       on ? "bg-fg text-page" : `${categoryTone(id).chip} hover:brightness-95 dark:hover:brightness-125`
                     }`}
                   >
