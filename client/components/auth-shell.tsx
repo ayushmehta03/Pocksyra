@@ -4,10 +4,10 @@ import { LockIcon } from "@/components/icons";
 export function Logo() {
   return (
     <div className="flex items-center gap-2.5">
-      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-jade-300 to-jade-600 text-lg font-bold text-accent-ink shadow-[0_8px_20px_-8px_rgba(63,214,163,0.7)]">
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-base font-bold text-accent-ink">
         P
       </span>
-      <span className="text-lg font-semibold tracking-tight text-fg">Pocksyra</span>
+      <span className="text-[17px] font-semibold tracking-tight text-fg">Pocksyra</span>
     </div>
   );
 }

@@ -6,23 +6,15 @@ import type { ReactNode } from "react";
 import { Avatar } from "@/components/avatar";
 import { useAuth } from "@/components/auth-provider";
 import { Logo } from "@/components/auth-shell";
+import { HomeIcon, LogoutIcon, PlusIcon, ReceiptIcon, SlidersIcon, SwapIcon, UsersIcon } from "@/components/icons";
+import { m } from "@/components/motion";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { NotificationsProvider } from "@/components/notifications/notifications-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
-import {
-  HomeIcon,
-  LogoutIcon,
-  PlusIcon,
-  ReceiptIcon,
-  SlidersIcon,
-  SwapIcon,
-  UsersIcon,
-} from "@/components/icons";
 import type { User } from "@/lib/api";
 
-type NavItem = { label: string; href?: string; icon: typeof HomeIcon };
+type NavItem = { label: string; href: string; icon: typeof HomeIcon };
 
-// Items without an href are on the roadmap and render as "Soon".
 const NAV: NavItem[] = [
   { label: "Overview", href: "/dashboard", icon: HomeIcon },
   { label: "Friends", href: "/dashboard/friends", icon: UsersIcon },
@@ -31,37 +23,58 @@ const NAV: NavItem[] = [
   { label: "Settings", href: "/dashboard/settings", icon: SlidersIcon },
 ];
 
-function isActive(href: string | undefined, pathname: string): boolean {
-  if (!href) return false;
+// The mobile bar has room for four tabs and the add button between them.
+const TABS: NavItem[] = [NAV[0], NAV[1], NAV[3], NAV[4]];
+
+function isActive(href: string, pathname: string): boolean {
   return href === "/dashboard" ? pathname === href : pathname === href || pathname.startsWith(href + "/");
 }
 
+const ADD_HREF = "/dashboard/expenses/new";
+
 function SideLink({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon;
-  const base = "relative flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition";
-  if (!item.href) {
-    return (
-      <span aria-disabled className={`${base} cursor-not-allowed text-fg-4`}>
-        <Icon />
-        {item.label}
-        <span className="ml-auto rounded-full border border-wash/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-fg-3">
-          Soon
-        </span>
-      </span>
-    );
-  }
   return (
     <Link
       href={item.href}
       aria-current={active ? "page" : undefined}
-      className={`${base} ${
-        active
-          ? "bg-wash/[0.07] text-fg shadow-[inset_0_0_0_1px_var(--line)]"
-          : "text-fg-2 hover:bg-wash/[0.04] hover:text-fg"
+      className={`relative flex items-center rounded-lg px-3 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent/50 ${
+        active ? "text-fg" : "text-fg-2 hover:text-fg"
       }`}
     >
-      {active && <span className="absolute left-0 top-2.5 h-[calc(100%-1.25rem)] w-0.5 rounded-full bg-jade-400" />}
-      <Icon className={active ? "text-accent-text" : ""} />
+      {active && (
+        <m.span
+          layoutId="nav-pill"
+          className="absolute inset-0 rounded-lg bg-wash/[0.06]"
+          transition={{ type: "spring", stiffness: 500, damping: 38 }}
+        />
+      )}
+      <span className="relative flex items-center gap-3">
+        <Icon width={18} height={18} className={active ? "text-accent-text" : ""} />
+        {item.label}
+      </span>
+    </Link>
+  );
+}
+
+function TabLink({ item, active }: { item: NavItem; active: boolean }) {
+  const Icon = item.icon;
+  return (
+    <Link
+      href={item.href}
+      aria-current={active ? "page" : undefined}
+      className={`relative flex flex-col items-center gap-1 px-3 py-1.5 text-[10px] font-medium outline-none ${
+        active ? "text-accent-text" : "text-fg-3"
+      }`}
+    >
+      {active && (
+        <m.span
+          layoutId="tab-indicator"
+          className="absolute -top-2 left-3 right-3 mx-auto h-0.5 w-8 rounded-full bg-accent"
+          transition={{ type: "spring", stiffness: 500, damping: 38 }}
+        />
+      )}
+      <Icon width={22} height={22} />
       {item.label}
     </Link>
   );
@@ -88,9 +101,8 @@ function ShellContent({ user, children }: { user: User; children: ReactNode }) {
   return (
     <div className="min-h-screen">
       {/* Desktop sidebar */}
-      <aside className="grain fixed inset-y-0 left-0 z-20 hidden w-72 flex-col overflow-hidden border-r border-wash/10 bg-page/70 p-6 backdrop-blur-2xl lg:flex">
-        <div className="pointer-events-none absolute -left-24 -top-24 hidden h-72 w-72 rounded-full bg-jade-600/25 blur-[90px] dark:block" />
-        <div className="relative flex items-center justify-between px-1.5 pb-8 pt-1">
+      <aside className="fixed inset-y-0 left-0 z-20 hidden w-64 flex-col border-r border-wash/10 bg-panel px-4 py-5 lg:flex">
+        <div className="flex items-center justify-between px-2 pb-6">
           <Logo />
           <div className="flex items-center">
             <ThemeToggle />
@@ -98,23 +110,34 @@ function ShellContent({ user, children }: { user: User; children: ReactNode }) {
           </div>
         </div>
 
-        <nav className="relative flex-1 space-y-1" aria-label="Main">
+        <Link
+          href={ADD_HREF}
+          className="mb-5 flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-ink outline-none transition hover:brightness-110 focus-visible:ring-4 focus-visible:ring-accent/30 active:scale-[0.98]"
+        >
+          <PlusIcon width={16} height={16} strokeWidth={2.4} />
+          Add expense
+        </Link>
+
+        <nav className="flex-1 space-y-1" aria-label="Main">
           {NAV.map((item) => (
             <SideLink key={item.label} item={item} active={isActive(item.href, pathname)} />
           ))}
         </nav>
 
-        <div className="surface relative !rounded-2xl p-3.5">
-          <div className="flex items-center gap-3">
-            <Avatar user={user} className="h-10 w-10 shrink-0 text-sm" />
+        <div className="border-t border-wash/10 pt-4">
+          <Link
+            href="/dashboard/people/me"
+            className="flex items-center gap-3 rounded-lg px-2 py-1.5 outline-none transition hover:bg-wash/[0.05] focus-visible:ring-2 focus-visible:ring-accent/50"
+          >
+            <Avatar user={user} className="h-9 w-9 shrink-0 text-sm" />
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-fg">{user.name}</p>
               <p className="truncate text-xs text-fg-3">@{user.username}</p>
             </div>
-          </div>
+          </Link>
           <button
             onClick={onLogout}
-            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-wash/10 px-3 py-2 text-xs font-medium text-fg-2 transition hover:bg-wash/[0.06] hover:text-fg"
+            className="mt-2 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-fg-3 outline-none transition hover:bg-wash/[0.05] hover:text-fg focus-visible:ring-2 focus-visible:ring-accent/50"
           >
             <LogoutIcon width={16} height={16} />
             Log out
@@ -123,7 +146,7 @@ function ShellContent({ user, children }: { user: User; children: ReactNode }) {
       </aside>
 
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-wash/10 bg-page/75 px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur-xl lg:hidden">
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b border-wash/10 bg-page/80 px-5 pb-3 pt-[calc(0.75rem+env(safe-area-inset-top))] backdrop-blur-xl lg:hidden">
         <Logo />
         <div className="flex items-center gap-1">
           <ThemeToggle />
@@ -134,51 +157,35 @@ function ShellContent({ user, children }: { user: User; children: ReactNode }) {
         </div>
       </header>
 
-      <main className="px-5 pb-32 pt-8 sm:px-8 lg:ml-72 lg:px-12 lg:pb-16 lg:pt-12">
+      <main className="px-5 pb-32 pt-8 sm:px-8 lg:ml-64 lg:px-12 lg:pb-16 lg:pt-12">
         <div className="mx-auto max-w-5xl">{children}</div>
       </main>
 
       {/* Mobile bottom tab bar */}
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-wash/10 bg-page/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-wash/10 bg-panel/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
       >
         <ul className="mx-auto flex max-w-md items-end justify-around px-2 pt-2">
-          {[NAV[0], NAV[1], "add" as const, NAV[3], NAV[4]].map((item, i) => {
-            if (item === "add") {
-              return (
-                <li key="add" className="-mt-6">
-                  <Link
-                    href="/dashboard/expenses/new"
-                    aria-label="Add expense"
-                    className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-b from-jade-300 to-jade-500 text-accent-ink shadow-[0_10px_30px_-6px_rgba(25,184,135,0.7)] ring-4 ring-page transition active:scale-95"
-                  >
-                    <PlusIcon width={26} height={26} strokeWidth={2.2} />
-                  </Link>
-                </li>
-              );
-            }
-            const Icon = item.icon;
-            const active = isActive(item.href, pathname);
-            const cls = `flex flex-col items-center gap-1 px-3 py-1.5 text-[10px] font-medium ${
-              active ? "text-accent-text" : item.href ? "text-fg-2" : "text-fg-4"
-            }`;
-            return (
-              <li key={item.label + i}>
-                {item.href ? (
-                  <Link href={item.href} aria-current={active ? "page" : undefined} className={cls}>
-                    <Icon />
-                    {item.label}
-                  </Link>
-                ) : (
-                  <span aria-disabled className={cls}>
-                    <Icon />
-                    {item.label}
-                  </span>
-                )}
-              </li>
-            );
-          })}
+          {TABS.slice(0, 2).map((item) => (
+            <li key={item.label}>
+              <TabLink item={item} active={isActive(item.href, pathname)} />
+            </li>
+          ))}
+          <li className="-mt-6">
+            <Link
+              href={ADD_HREF}
+              aria-label="Add expense"
+              className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-accent-ink shadow-lg shadow-accent/30 ring-4 ring-panel outline-none transition focus-visible:ring-accent/40 active:scale-95"
+            >
+              <PlusIcon width={26} height={26} strokeWidth={2.2} />
+            </Link>
+          </li>
+          {TABS.slice(2).map((item) => (
+            <li key={item.label}>
+              <TabLink item={item} active={isActive(item.href, pathname)} />
+            </li>
+          ))}
         </ul>
       </nav>
     </div>
