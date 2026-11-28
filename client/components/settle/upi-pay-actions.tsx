@@ -6,6 +6,9 @@ import { buildAppLinks, buildUpiLink, payPlatformFrom, type PayPlatform, type Up
 
 const BUTTON =
   "flex w-full items-center justify-center rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-accent-ink transition hover:brightness-110 active:scale-[0.98]";
+// One of several apps to pick from: outlined, so the choice isn't three loud green buttons.
+const APP =
+  "flex w-full items-center justify-center rounded-xl border border-wash/15 bg-panel px-2 py-3 text-sm font-semibold text-fg transition hover:border-accent hover:text-accent-text active:scale-[0.98]";
 
 /**
  * How to pay a friend by UPI on this device: a chooser link on Android, one
@@ -26,7 +29,7 @@ export function UpiPayActions({ opts, amountLabel }: { opts: UpiLinkOptions; amo
         <p className="text-xs font-medium text-fg">Pay {amountLabel} with</p>
         <div className="grid grid-cols-3 gap-2">
           {buildAppLinks(opts).map((app) => (
-            <a key={app.id} href={app.link} className={`${BUTTON} px-2`}>
+            <a key={app.id} href={app.link} className={APP}>
               {app.label}
             </a>
           ))}
@@ -41,7 +44,7 @@ export function UpiPayActions({ opts, amountLabel }: { opts: UpiLinkOptions; amo
   if (platform === "desktop") {
     return (
       <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-center sm:gap-5">
-        <UpiQr link={link} />
+        <span className="rounded-xl bg-white p-2 shadow-sm ring-1 ring-black/5"><UpiQr link={link} className="h-40 w-40" /></span>
         <div className="space-y-1 text-center sm:text-left">
           <p className="text-sm font-medium text-fg">Scan to pay {amountLabel}</p>
           <p className="text-xs text-fg-3">

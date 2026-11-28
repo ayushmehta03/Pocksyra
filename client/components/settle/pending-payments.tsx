@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Avatar } from "@/components/avatar";
+import { AnimatePresence, EASE, m } from "@/components/motion";
 import { Button, FormError } from "@/components/ui";
 import { errorMessage, type Settlement, type SettlementPage } from "@/lib/api";
 import { formatDate, formatMoney } from "@/lib/format";
@@ -39,7 +40,14 @@ function PendingRow({
   };
 
   return (
-    <li className="px-5 py-4">
+    <m.li
+      layout="position"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: 24 }}
+      transition={{ duration: 0.3, ease: EASE }}
+      className="px-5 py-4"
+    >
       <div className="flex flex-wrap items-center gap-4">
         {other && <Avatar user={other} className="h-11 w-11 shrink-0 text-sm" />}
         <div className="min-w-0 flex-1">
@@ -53,7 +61,7 @@ function PendingRow({
             {s.note && ` · ${s.note}`}
           </p>
         </div>
-        <p className="font-mono text-sm font-medium text-fg">{formatMoney(s.amount, s.currency)}</p>
+        <p className="num font-mono text-sm font-semibold text-fg">{formatMoney(s.amount, s.currency)}</p>
         <div className="flex gap-2">
           {actions.map((a) => (
             <Button
@@ -74,7 +82,7 @@ function PendingRow({
           <FormError message={error} />
         </div>
       )}
-    </li>
+    </m.li>
   );
 }
 
@@ -105,7 +113,8 @@ export function PendingPayments({
   return (
     <section className="space-y-3" aria-label="Payments waiting for confirmation">
       <h2 className="text-sm font-semibold text-fg">Waiting for confirmation</h2>
-      <ul className="surface divide-y divide-wash/[0.06]">
+      <ul className="surface divide-y divide-wash/[0.06] overflow-hidden">
+        <AnimatePresence initial={false}>
         {incoming.map((s) => (
           <PendingRow
             key={s.id}
@@ -129,6 +138,7 @@ export function PendingPayments({
             actions={[{ label: "Cancel", run: cancel, variant: "ghost" }]}
           />
         ))}
+        </AnimatePresence>
       </ul>
       {incoming.length > 0 && (
         <p className="text-xs text-fg-3">

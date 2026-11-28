@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
 import { useAuth } from "@/components/auth-provider";
+import { AnimatePresence, EASE, m } from "@/components/motion";
 import { Button, Field, FormError } from "@/components/ui";
 import { errorMessage, newIdempotencyKey, settlementsApi, type FriendBalance } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
@@ -93,8 +94,8 @@ export function SettleRow({
   };
 
   return (
-    <li className="px-5 py-4">
-      <div className="flex items-center gap-4">
+    <li>
+      <div className="flex items-center gap-4 px-5 py-4">
         <Avatar user={friend} className="h-11 w-11 shrink-0 text-sm" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-fg">{friend.name}</p>
@@ -110,7 +111,8 @@ export function SettleRow({
             </p>
           )}
         </div>
-        <p className={`font-mono text-sm font-medium ${theyOweMe ? "text-accent-text" : "text-warn"}`}>
+        <p className={`num font-mono text-sm font-semibold ${theyOweMe ? "text-accent-text" : "text-warn"}`}>
+          {theyOweMe ? "+" : "−"}
           {formatMoney(outstanding, currency)}
         </p>
         {waiting ? (
@@ -120,74 +122,105 @@ export function SettleRow({
             Pending
           </Button>
         ) : (
-          <Button size="sm" variant={open ? "ghost" : "primary"} onClick={() => setOpen((o) => !o)}>
+          <Button size="sm" variant={open ? "ghost" : "primary"} aria-expanded={open} onClick={() => setOpen((o) => !o)}>
             {open ? "Close" : "Settle up"}
           </Button>
         )}
       </div>
 
-      {open && !waiting && (
-        <form onSubmit={submit} className="mt-4 space-y-4 rounded-xl bg-wash/[0.03] p-4" noValidate>
-          <p className="text-xs text-fg-2">
-            {theyOweMe
-              ? `Record that ${friend.name} paid you back.`
-              : `Tell ${friend.name} you've paid. They'll be asked to confirm, and your balance changes once they do.`}{" "}
-            Partial payments are fine.
-          </p>
-          {canPayByUpi &&
-            (friendUpiId ? (
-              <div className="space-y-3 rounded-xl border border-jade-400/20 bg-jade-400/[0.06] p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-2">
-                      {friend.name}&apos;s UPI ID
-                    </p>
-                    <p className="truncate font-mono text-sm text-fg">{friendUpiId}</p>
-                  </div>
-                  <Button type="button" size="sm" variant="ghost" onClick={copyUpi}>
-                    {copied ? "Copied" : "Copy"}
-                  </Button>
-                </div>
-                {upiOpts ? (
-                  <UpiPayActions opts={upiOpts} amountLabel={formatMoney(payMinor ?? 0, currency)} />
-                ) : (
-                  <p className="text-xs text-fg-3">Enter an amount below to get a payment link.</p>
-                )}
-                <p className="text-xs text-fg-3">When the payment goes through, tap I&apos;ve paid below.</p>
-              </div>
-            ) : (
-              <p className="rounded-xl border border-wash/10 px-4 py-3 text-xs text-fg-2">
-                {friend.name} hasn&apos;t added a UPI ID yet. Ask them to add one in Settings, or pay them another way and
-                record it here.
+      <AnimatePresence initial={false}>
+        {open && !waiting && (
+          <m.div
+            key="panel"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: EASE }}
+            className="overflow-hidden"
+          >
+            <form onSubmit={submit} className="mx-5 mb-5 space-y-5 rounded-2xl bg-wash/[0.04] p-5" noValidate>
+              <p className="text-xs leading-relaxed text-fg-2">
+                {theyOweMe
+                  ? `Record that ${friend.name} paid you back.`
+                  : `Tell ${friend.name} you've paid. They'll be asked to confirm, and your balance changes once they do.`}{" "}
+                Partial payments are fine.
               </p>
-            ))}
-          {theyOweMe && !user?.upiId && (
-            <p className="rounded-xl border border-gold-400/25 bg-gold-400/[0.06] px-4 py-3 text-xs text-fg-2">
-              Add your UPI ID in{" "}
-              <Link href="/dashboard/settings" className="font-medium text-warn underline underline-offset-2">
-                Settings
-              </Link>{" "}
-              so {friend.name} can pay you straight from Pocksyra.
-            </p>
-          )}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label={`Amount (${currency})`}
-              inputMode="decimal"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              className="font-mono"
-            />
-            <Field label="Note (optional)" value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} placeholder="UPI, cash…" />
-          </div>
-          <FormError message={error} />
-          <div className="flex justify-end">
-            <Button type="submit" loading={busy}>
-              {theyOweMe ? "Record payment" : "I've paid"}
-            </Button>
-          </div>
-        </form>
-      )}
+
+              <div className="text-center">
+                <label htmlFor={`amt-${friend.id}-${currency}`} className="text-xs font-medium text-fg-3">
+                  Amount ({currency})
+                </label>
+                <input
+                  id={`amt-${friend.id}-${currency}`}
+                  inputMode="decimal"
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  className="num mt-1 block w-full bg-transparent text-center font-mono text-4xl font-semibold tracking-tight text-fg outline-none placeholder:text-fg-4"
+                  placeholder="0.00"
+                />
+                <div className="mt-2 flex justify-center gap-2">
+                  {[
+                    { label: "Full amount", minor: outstanding },
+                    { label: "Half", minor: Math.round(outstanding / 2) },
+                  ].map((q) => (
+                    <button
+                      key={q.label}
+                      type="button"
+                      onClick={() => setText(minorToInput(q.minor, currency))}
+                      className="rounded-full bg-wash/[0.07] px-3 py-1 text-xs font-medium text-fg-2 outline-none transition hover:bg-wash/10 hover:text-fg focus-visible:ring-2 focus-visible:ring-accent/40"
+                    >
+                      {q.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {canPayByUpi &&
+                (friendUpiId ? (
+                  <div className="space-y-3 rounded-xl border border-accent/25 bg-accent/[0.06] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-fg-2">{friend.name}&apos;s UPI ID</p>
+                        <p className="truncate font-mono text-sm text-fg">{friendUpiId}</p>
+                      </div>
+                      <Button type="button" size="sm" variant="ghost" onClick={copyUpi}>
+                        {copied ? "Copied" : "Copy"}
+                      </Button>
+                    </div>
+                    {upiOpts ? (
+                      <UpiPayActions opts={upiOpts} amountLabel={formatMoney(payMinor ?? 0, currency)} />
+                    ) : (
+                      <p className="text-xs text-fg-3">Enter an amount above to get a payment link.</p>
+                    )}
+                    <p className="text-xs text-fg-3">When the payment goes through, tap I&apos;ve paid below.</p>
+                  </div>
+                ) : (
+                  <p className="rounded-xl border border-wash/10 px-4 py-3 text-xs text-fg-2">
+                    {friend.name} hasn&apos;t added a UPI ID yet. Ask them to add one in Settings, or pay them another way and
+                    record it here.
+                  </p>
+                ))}
+              {theyOweMe && !user?.upiId && (
+                <p className="rounded-xl border border-warn/25 bg-warn/[0.06] px-4 py-3 text-xs text-fg-2">
+                  Add your UPI ID in{" "}
+                  <Link href="/dashboard/settings" className="font-medium text-warn underline underline-offset-2">
+                    Settings
+                  </Link>{" "}
+                  so {friend.name} can pay you straight from Pocksyra.
+                </p>
+              )}
+
+              <Field label="Note (optional)" value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} placeholder="UPI, cash…" />
+              <FormError message={error} />
+              <div className="flex justify-end">
+                <Button type="submit" loading={busy}>
+                  {theyOweMe ? "Record payment" : "I've paid"}
+                </Button>
+              </div>
+            </form>
+          </m.div>
+        )}
+      </AnimatePresence>
     </li>
   );
 }

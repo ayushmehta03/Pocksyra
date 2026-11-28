@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 import { EmptyState, ListSkeleton } from "@/components/empty-state";
-import { CheckIcon, SwapIcon } from "@/components/icons";
+import { ArrowDownLeftIcon, ArrowUpRightIcon, CheckIcon } from "@/components/icons";
+import { Stagger, StaggerItem } from "@/components/motion";
 import { PageHeader } from "@/components/page-header";
 import { PendingPayments } from "@/components/settle/pending-payments";
 import { SettleRow } from "@/components/settle/settle-row";
@@ -44,27 +45,50 @@ export default function SettlePage() {
     };
   };
 
+  const cur = user.defaultCurrency;
+  const totals = data?.totals.find((t) => t.currency === cur);
+
   const onSettled = async () => {
     await Promise.all([reload(), loadHistory()]);
   };
 
   return (
-    <div className="space-y-10">
-      <PageHeader eyebrow="Settle up" title="Square things away" subtitle="Paid someone back, or got paid? Record it here and the balance updates." />
+    <Stagger className="space-y-8">
+      <StaggerItem>
+        <PageHeader eyebrow="Settle up" title="Square things away" subtitle="Paid someone back, or got paid? Record it here and the balance updates." />
+      </StaggerItem>
 
       <FormError message={error || historyError} />
 
-      {history && (
-        <PendingPayments
-          page={history}
-          meId={user.id}
-          confirm={settlementsApi.confirm}
-          decline={settlementsApi.decline}
-          cancel={settlementsApi.cancel}
-          onChanged={onSettled}
-        />
+      {totals && (totals.owe > 0 || totals.owed > 0) && (
+        <StaggerItem>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="surface p-4">
+              <p className="text-xs font-medium text-fg-3">You owe</p>
+              <p className="num mt-1 font-mono text-xl font-semibold text-warn sm:text-2xl">{formatMoney(totals.owe, cur)}</p>
+            </div>
+            <div className="surface p-4">
+              <p className="text-xs font-medium text-fg-3">You&apos;re owed</p>
+              <p className="num mt-1 font-mono text-xl font-semibold text-accent-text sm:text-2xl">{formatMoney(totals.owed, cur)}</p>
+            </div>
+          </div>
+        </StaggerItem>
       )}
 
+      {history && history.settlements.some((x) => x.status === "pending") && (
+        <StaggerItem>
+          <PendingPayments
+            page={history}
+            meId={user.id}
+            confirm={settlementsApi.confirm}
+            decline={settlementsApi.decline}
+            cancel={settlementsApi.cancel}
+            onChanged={onSettled}
+          />
+        </StaggerItem>
+      )}
+
+      <StaggerItem>
       <section className="space-y-3" aria-label="Open balances">
         <h2 className="text-sm font-semibold text-fg">Open balances</h2>
         {loading ? (
@@ -72,7 +96,7 @@ export default function SettlePage() {
         ) : !data || data.balances.length === 0 ? (
           <EmptyState icon={CheckIcon} title="All settled up" text="Nobody owes anybody anything. Enjoy it while it lasts." />
         ) : (
-          <ul className="surface divide-y divide-wash/[0.06]">
+          <ul className="surface divide-y divide-wash/[0.06] overflow-hidden">
             {data.balances.map((b) => (
               <SettleRow
                 key={`${b.friend.id}-${b.currency}`}
@@ -85,8 +109,10 @@ export default function SettlePage() {
           </ul>
         )}
       </section>
+      </StaggerItem>
 
       {history && history.settlements.some((s) => s.status !== "pending") && (
+        <StaggerItem>
         <section className="space-y-3" aria-label="History">
           <h2 className="text-sm font-semibold text-fg">History</h2>
           <ul className="surface divide-y divide-wash/[0.06]">
@@ -96,8 +122,12 @@ export default function SettlePage() {
               const other = history.people[iPaid ? s.to : s.from];
               return (
                 <li key={s.id} className="flex items-center gap-4 px-5 py-4">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-wash/[0.06] text-fg-2">
-                    <SwapIcon width={18} height={18} />
+                  <span
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                      dead ? "bg-wash/[0.06] text-fg-3" : iPaid ? "bg-warn/10 text-warn" : "bg-accent/10 text-accent-text"
+                    }`}
+                  >
+                    {iPaid ? <ArrowUpRightIcon width={18} height={18} /> : <ArrowDownLeftIcon width={18} height={18} />}
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm text-fg">
@@ -110,7 +140,7 @@ export default function SettlePage() {
                     </p>
                   </div>
                   <p
-                    className={`font-mono text-sm ${
+                    className={`num font-mono text-sm font-medium ${
                       dead ? "text-fg-3 line-through" : iPaid ? "text-warn" : "text-accent-text"
                     }`}
                   >
@@ -121,7 +151,8 @@ export default function SettlePage() {
             })}
           </ul>
         </section>
+        </StaggerItem>
       )}
-    </div>
+    </Stagger>
   );
 }
