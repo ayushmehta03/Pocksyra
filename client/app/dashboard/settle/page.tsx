@@ -66,13 +66,13 @@ export default function SettlePage() {
       )}
 
       <section className="space-y-3" aria-label="Open balances">
-        <h2 className="text-sm font-semibold text-ivory-50">Open balances</h2>
+        <h2 className="text-sm font-semibold text-fg">Open balances</h2>
         {loading ? (
           <ListSkeleton />
         ) : !data || data.balances.length === 0 ? (
           <EmptyState icon={CheckIcon} title="All settled up" text="Nobody owes anybody anything. Enjoy it while it lasts." />
         ) : (
-          <ul className="surface divide-y divide-white/[0.06]">
+          <ul className="surface divide-y divide-wash/[0.06]">
             {data.balances.map((b) => (
               <SettleRow
                 key={`${b.friend.id}-${b.currency}`}
@@ -88,22 +88,22 @@ export default function SettlePage() {
 
       {history && history.settlements.some((s) => s.status !== "pending") && (
         <section className="space-y-3" aria-label="History">
-          <h2 className="text-sm font-semibold text-ivory-50">History</h2>
-          <ul className="surface divide-y divide-white/[0.06]">
+          <h2 className="text-sm font-semibold text-fg">History</h2>
+          <ul className="surface divide-y divide-wash/[0.06]">
             {history.settlements.filter((s) => s.status !== "pending").map((s) => {
               const iPaid = s.from === user.id;
               const dead = s.status === "declined" || s.status === "cancelled";
               const other = history.people[iPaid ? s.to : s.from];
               return (
                 <li key={s.id} className="flex items-center gap-4 px-5 py-4">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-ink-300">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-wash/[0.06] text-fg-2">
                     <SwapIcon width={18} height={18} />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm text-ivory-50">
+                    <p className="truncate text-sm text-fg">
                       {iPaid ? `You paid ${other?.name ?? "someone"}` : `${other?.name ?? "Someone"} paid you`}
                     </p>
-                    <p className="truncate text-xs text-ink-400">
+                    <p className="truncate text-xs text-fg-3">
                       {formatDate(s.date)}
                       {s.note && ` · ${s.note}`}
                       {dead && ` · ${s.status === "declined" ? "not received" : "cancelled"}`}
@@ -111,7 +111,7 @@ export default function SettlePage() {
                   </div>
                   <p
                     className={`font-mono text-sm ${
-                      dead ? "text-ink-400 line-through" : iPaid ? "text-gold-400" : "text-jade-300"
+                      dead ? "text-fg-3 line-through" : iPaid ? "text-warn" : "text-accent-text"
                     }`}
                   >
                     {formatMoney(s.amount, s.currency)}

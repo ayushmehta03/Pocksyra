@@ -49,21 +49,21 @@ export function NotificationPreferencesCard() {
   return (
     <div className="surface space-y-4 p-6 sm:p-8">
       <div>
-        <h2 className="text-lg font-semibold tracking-tight text-ivory-50">What to notify me about</h2>
-        <p className="mt-1 text-sm leading-relaxed text-ink-300">
+        <h2 className="text-lg font-semibold tracking-tight text-fg">What to notify me about</h2>
+        <p className="mt-1 text-sm leading-relaxed text-fg-2">
           Turning one off hides it from your inbox and stops the push alert too.
         </p>
       </div>
       <FormError message={error} />
       {muted !== null && (
-        <ul className="divide-y divide-white/10">
+        <ul className="divide-y divide-wash/10">
           {NOTIFICATION_GROUPS.map((g) => {
             const on = isEnabled(muted, g.key);
             return (
               <li key={g.key} className="flex items-center justify-between gap-4 py-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-ivory-50">{g.label}</p>
-                  <p className="text-xs leading-relaxed text-ink-300">{g.hint}</p>
+                  <p className="text-sm font-medium text-fg">{g.label}</p>
+                  <p className="text-xs leading-relaxed text-fg-2">{g.hint}</p>
                 </div>
                 <button
                   type="button"
@@ -73,7 +73,7 @@ export function NotificationPreferencesCard() {
                   disabled={saving}
                   onClick={() => toggle(g.key)}
                   className={`relative h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-60 ${
-                    on ? "bg-jade-400" : "bg-white/15"
+                    on ? "bg-jade-400" : "bg-wash/15"
                   }`}
                 >
                   <span

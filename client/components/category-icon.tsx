@@ -74,16 +74,16 @@ const GLYPHS: Record<string, ReactNode> = {
 
 // Written out in full so Tailwind can see every class.
 const TONES: Record<string, { tile: string; chip: string; bar: string; dot: string }> = {
-  food: { tile: "from-orange-400/30 to-orange-400/5 text-orange-300", chip: "bg-orange-400/15 text-orange-300", bar: "bg-orange-400", dot: "bg-orange-400" },
-  groceries: { tile: "from-lime-400/30 to-lime-400/5 text-lime-300", chip: "bg-lime-400/15 text-lime-300", bar: "bg-lime-400", dot: "bg-lime-400" },
-  transport: { tile: "from-sky-400/30 to-sky-400/5 text-sky-300", chip: "bg-sky-400/15 text-sky-300", bar: "bg-sky-400", dot: "bg-sky-400" },
-  rent: { tile: "from-violet-400/30 to-violet-400/5 text-violet-300", chip: "bg-violet-400/15 text-violet-300", bar: "bg-violet-400", dot: "bg-violet-400" },
-  utilities: { tile: "from-yellow-400/30 to-yellow-400/5 text-yellow-300", chip: "bg-yellow-400/15 text-yellow-300", bar: "bg-yellow-400", dot: "bg-yellow-400" },
-  entertainment: { tile: "from-pink-400/30 to-pink-400/5 text-pink-300", chip: "bg-pink-400/15 text-pink-300", bar: "bg-pink-400", dot: "bg-pink-400" },
-  travel: { tile: "from-cyan-400/30 to-cyan-400/5 text-cyan-300", chip: "bg-cyan-400/15 text-cyan-300", bar: "bg-cyan-400", dot: "bg-cyan-400" },
-  shopping: { tile: "from-fuchsia-400/30 to-fuchsia-400/5 text-fuchsia-300", chip: "bg-fuchsia-400/15 text-fuchsia-300", bar: "bg-fuchsia-400", dot: "bg-fuchsia-400" },
-  health: { tile: "from-rose-400/30 to-rose-400/5 text-rose-300", chip: "bg-rose-400/15 text-rose-300", bar: "bg-rose-400", dot: "bg-rose-400" },
-  other: { tile: "from-white/15 to-white/[0.03] text-ink-300", chip: "bg-white/[0.07] text-ink-300", bar: "bg-ink-400", dot: "bg-ink-400" },
+  food: { tile: "from-orange-400/30 to-orange-400/5 text-orange-700 dark:text-orange-300", chip: "bg-orange-400/15 text-orange-700 dark:text-orange-300", bar: "bg-orange-400", dot: "bg-orange-400" },
+  groceries: { tile: "from-lime-400/30 to-lime-400/5 text-lime-700 dark:text-lime-300", chip: "bg-lime-400/15 text-lime-700 dark:text-lime-300", bar: "bg-lime-400", dot: "bg-lime-400" },
+  transport: { tile: "from-sky-400/30 to-sky-400/5 text-sky-700 dark:text-sky-300", chip: "bg-sky-400/15 text-sky-700 dark:text-sky-300", bar: "bg-sky-400", dot: "bg-sky-400" },
+  rent: { tile: "from-violet-400/30 to-violet-400/5 text-violet-700 dark:text-violet-300", chip: "bg-violet-400/15 text-violet-700 dark:text-violet-300", bar: "bg-violet-400", dot: "bg-violet-400" },
+  utilities: { tile: "from-yellow-400/30 to-yellow-400/5 text-yellow-700 dark:text-yellow-300", chip: "bg-yellow-400/15 text-yellow-700 dark:text-yellow-300", bar: "bg-yellow-400", dot: "bg-yellow-400" },
+  entertainment: { tile: "from-pink-400/30 to-pink-400/5 text-pink-700 dark:text-pink-300", chip: "bg-pink-400/15 text-pink-700 dark:text-pink-300", bar: "bg-pink-400", dot: "bg-pink-400" },
+  travel: { tile: "from-cyan-400/30 to-cyan-400/5 text-cyan-700 dark:text-cyan-300", chip: "bg-cyan-400/15 text-cyan-700 dark:text-cyan-300", bar: "bg-cyan-400", dot: "bg-cyan-400" },
+  shopping: { tile: "from-fuchsia-400/30 to-fuchsia-400/5 text-fuchsia-700 dark:text-fuchsia-300", chip: "bg-fuchsia-400/15 text-fuchsia-700 dark:text-fuchsia-300", bar: "bg-fuchsia-400", dot: "bg-fuchsia-400" },
+  health: { tile: "from-rose-400/30 to-rose-400/5 text-rose-700 dark:text-rose-300", chip: "bg-rose-400/15 text-rose-700 dark:text-rose-300", bar: "bg-rose-400", dot: "bg-rose-400" },
+  other: { tile: "from-wash/15 to-wash/[0.03] text-fg-2", chip: "bg-wash/[0.07] text-fg-2", bar: "bg-fg-3", dot: "bg-fg-3" },
 };
 
 const known = (id: string) => (GLYPHS[id] ? id : "other");
@@ -100,7 +100,7 @@ export function CategoryTile({ id, className = "" }: { id: string; className?: s
   const key = known(id);
   return (
     <span
-      className={`flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br shadow-inner ring-1 ring-white/10 ${TONES[key]!.tile} ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-br shadow-inner ring-1 ring-wash/10 ${TONES[key]!.tile} ${className}`}
       title={categoryLabel(key)}
     >
       <CategoryIcon id={key} />

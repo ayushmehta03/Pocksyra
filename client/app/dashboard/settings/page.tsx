@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Avatar } from "@/components/avatar";
+import { AppearanceCard } from "@/components/appearance-card";
 import { NotificationPreferencesCard } from "@/components/notifications/preferences-card";
 import { PushCard } from "@/components/notifications/push-card";
 import { useAuth } from "@/components/auth-provider";
@@ -88,10 +89,10 @@ export default function SettingsPage() {
 
       <div className="grid gap-6 lg:grid-cols-5">
         <form onSubmit={onSave} className="surface space-y-6 p-6 sm:p-8 lg:col-span-3">
-          <h2 className="text-lg font-semibold tracking-tight text-ivory-50">Profile</h2>
+          <h2 className="text-lg font-semibold tracking-tight text-fg">Profile</h2>
           <FormError message={error} />
           {message && (
-            <div role="status" className="rounded-xl border border-jade-400/30 bg-jade-400/10 px-4 py-3 text-sm text-jade-300">
+            <div role="status" className="rounded-xl border border-jade-400/30 bg-jade-400/10 px-4 py-3 text-sm text-accent-text">
               {message}
             </div>
           )}
@@ -136,22 +137,22 @@ export default function SettingsPage() {
             <div className="relative flex items-center gap-4">
               <Avatar user={user} className="h-14 w-14 text-lg" />
               <div className="min-w-0">
-                <p className="truncate text-lg font-semibold tracking-tight text-ivory-50">{user.name}</p>
-                <p className="truncate text-sm text-ink-400">@{user.username}</p>
+                <p className="truncate text-lg font-semibold tracking-tight text-fg">{user.name}</p>
+                <p className="truncate text-sm text-fg-3">@{user.username}</p>
               </div>
             </div>
-            <dl className="relative mt-6 space-y-3 border-t border-white/10 pt-5 text-sm">
+            <dl className="relative mt-6 space-y-3 border-t border-wash/10 pt-5 text-sm">
               <div className="flex justify-between gap-4">
-                <dt className="text-ink-400">Email</dt>
-                <dd className="truncate text-ivory-100">{user.email}</dd>
+                <dt className="text-fg-3">Email</dt>
+                <dd className="truncate text-fg">{user.email}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-ink-400">Member since</dt>
-                <dd className="text-ivory-100">{formatDate(user.createdAt)}</dd>
+                <dt className="text-fg-3">Member since</dt>
+                <dd className="text-fg">{formatDate(user.createdAt)}</dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-ink-400">Sign-in</dt>
-                <dd className="text-ivory-100">Google</dd>
+                <dt className="text-fg-3">Sign-in</dt>
+                <dd className="text-fg">Google</dd>
               </div>
             </dl>
             <button
@@ -160,7 +161,7 @@ export default function SettingsPage() {
                 await logout();
                 router.replace("/login");
               }}
-              className="relative mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-white/10 px-3 py-2.5 text-sm font-medium text-ink-300 transition hover:bg-white/[0.06] hover:text-ivory-50"
+              className="relative mt-6 flex w-full items-center justify-center gap-2 rounded-lg border border-wash/10 px-3 py-2.5 text-sm font-medium text-fg-2 transition hover:bg-wash/[0.06] hover:text-fg"
             >
               <LogoutIcon width={16} height={16} />
               Log out
@@ -169,6 +170,7 @@ export default function SettingsPage() {
         </aside>
 
         <div className="space-y-6 lg:col-span-3">
+          <AppearanceCard />
           <PushCard />
           <NotificationPreferencesCard />
         </div>

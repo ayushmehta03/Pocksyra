@@ -29,10 +29,10 @@ export function MyLevelCard() {
   return (
     <Link
       href="/dashboard/people/me"
-      className="surface group block space-y-3 p-5 transition hover:bg-white/[0.06] sm:p-6"
+      className="surface group block space-y-3 p-5 transition hover:bg-wash/[0.06] sm:p-6"
     >
       <LevelCard level={profile.level} compact />
-      <p className="flex items-center gap-1.5 text-xs font-medium text-jade-300">
+      <p className="flex items-center gap-1.5 text-xs font-medium text-accent-text">
         View your profile and badges
         <ArrowRightIcon width={14} height={14} className="transition group-hover:translate-x-0.5" />
       </p>

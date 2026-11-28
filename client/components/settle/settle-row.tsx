@@ -97,20 +97,20 @@ export function SettleRow({
       <div className="flex items-center gap-4">
         <Avatar user={friend} className="h-11 w-11 shrink-0 text-sm" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-ivory-50">{friend.name}</p>
-          <p className="truncate text-xs text-ink-400">{theyOweMe ? "owes you" : "you owe them"}</p>
+          <p className="truncate text-sm font-semibold text-fg">{friend.name}</p>
+          <p className="truncate text-xs text-fg-3">{theyOweMe ? "owes you" : "you owe them"}</p>
           {pendingOut > 0 && (
-            <p className="truncate text-xs text-gold-300">
+            <p className="truncate text-xs text-warn">
               {formatMoney(pendingOut, currency)} waiting for {friend.name} to confirm
             </p>
           )}
           {pendingIn > 0 && (
-            <p className="truncate text-xs text-gold-300">
+            <p className="truncate text-xs text-warn">
               {friend.name} says they paid {formatMoney(pendingIn, currency)}. Confirm it above.
             </p>
           )}
         </div>
-        <p className={`font-mono text-sm font-medium ${theyOweMe ? "text-jade-300" : "text-gold-400"}`}>
+        <p className={`font-mono text-sm font-medium ${theyOweMe ? "text-accent-text" : "text-warn"}`}>
           {formatMoney(outstanding, currency)}
         </p>
         {waiting ? (
@@ -127,8 +127,8 @@ export function SettleRow({
       </div>
 
       {open && !waiting && (
-        <form onSubmit={submit} className="mt-4 space-y-4 rounded-xl bg-white/[0.03] p-4" noValidate>
-          <p className="text-xs text-ink-300">
+        <form onSubmit={submit} className="mt-4 space-y-4 rounded-xl bg-wash/[0.03] p-4" noValidate>
+          <p className="text-xs text-fg-2">
             {theyOweMe
               ? `Record that ${friend.name} paid you back.`
               : `Tell ${friend.name} you've paid. They'll be asked to confirm, and your balance changes once they do.`}{" "}
@@ -139,10 +139,10 @@ export function SettleRow({
               <div className="space-y-3 rounded-xl border border-jade-400/20 bg-jade-400/[0.06] p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-300">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-2">
                       {friend.name}&apos;s UPI ID
                     </p>
-                    <p className="truncate font-mono text-sm text-ivory-50">{friendUpiId}</p>
+                    <p className="truncate font-mono text-sm text-fg">{friendUpiId}</p>
                   </div>
                   <Button type="button" size="sm" variant="ghost" onClick={copyUpi}>
                     {copied ? "Copied" : "Copy"}
@@ -151,20 +151,20 @@ export function SettleRow({
                 {upiOpts ? (
                   <UpiPayActions opts={upiOpts} amountLabel={formatMoney(payMinor ?? 0, currency)} />
                 ) : (
-                  <p className="text-xs text-ink-400">Enter an amount below to get a payment link.</p>
+                  <p className="text-xs text-fg-3">Enter an amount below to get a payment link.</p>
                 )}
-                <p className="text-xs text-ink-400">When the payment goes through, tap I&apos;ve paid below.</p>
+                <p className="text-xs text-fg-3">When the payment goes through, tap I&apos;ve paid below.</p>
               </div>
             ) : (
-              <p className="rounded-xl border border-white/10 px-4 py-3 text-xs text-ink-300">
+              <p className="rounded-xl border border-wash/10 px-4 py-3 text-xs text-fg-2">
                 {friend.name} hasn&apos;t added a UPI ID yet. Ask them to add one in Settings, or pay them another way and
                 record it here.
               </p>
             ))}
           {theyOweMe && !user?.upiId && (
-            <p className="rounded-xl border border-gold-400/25 bg-gold-400/[0.06] px-4 py-3 text-xs text-ink-300">
+            <p className="rounded-xl border border-gold-400/25 bg-gold-400/[0.06] px-4 py-3 text-xs text-fg-2">
               Add your UPI ID in{" "}
-              <Link href="/dashboard/settings" className="font-medium text-gold-300 underline underline-offset-2">
+              <Link href="/dashboard/settings" className="font-medium text-warn underline underline-offset-2">
                 Settings
               </Link>{" "}
               so {friend.name} can pay you straight from Pocksyra.

@@ -56,12 +56,12 @@ export function UpiCard() {
   return (
     <form onSubmit={onSubmit} className="surface relative space-y-4 p-5 ring-1 ring-gold-400/25">
       <div className="flex items-start gap-4">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gold-400/25 to-jade-400/10 text-gold-300 ring-1 ring-white/10">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-gold-400/25 to-jade-400/10 text-warn ring-1 ring-wash/10">
           <WalletIcon width={20} height={20} />
         </span>
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-ivory-50">Add your UPI ID</p>
-          <p className="text-xs leading-relaxed text-ink-300">
+          <p className="text-sm font-semibold text-fg">Add your UPI ID</p>
+          <p className="text-xs leading-relaxed text-fg-2">
             Friends will be able to pay you back straight from Pocksyra. It only takes a few seconds, and you can change
             it later in Settings.
           </p>

@@ -77,23 +77,23 @@ export default function NotificationsPage() {
       ) : items.length === 0 ? (
         <EmptyState icon={BellIcon} title="Nothing yet" text="When a friend adds an expense, sends a request or pays you, it shows up here." />
       ) : (
-        <ul className="surface divide-y divide-white/[0.06]">
+        <ul className="surface divide-y divide-wash/[0.06]">
           {items.map((n) => (
             <li key={n.id}>
               <button
                 type="button"
                 onClick={() => open(n)}
-                className="flex w-full items-start gap-4 px-5 py-4 text-left outline-none transition hover:bg-white/[0.03] focus-visible:bg-white/[0.05]"
+                className="flex w-full items-start gap-4 px-5 py-4 text-left outline-none transition hover:bg-wash/[0.03] focus-visible:bg-wash/[0.05]"
               >
                 <span
                   aria-hidden
                   className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${n.read ? "bg-transparent" : "bg-jade-400"}`}
                 />
                 <span className="min-w-0 flex-1">
-                  <span className={`block text-sm leading-relaxed ${n.read ? "text-ink-300" : "font-medium text-ivory-50"}`}>
+                  <span className={`block text-sm leading-relaxed ${n.read ? "text-fg-2" : "font-medium text-fg"}`}>
                     {n.message}
                   </span>
-                  <span className="mt-0.5 block text-xs text-ink-400">{timeAgo(n.createdAt)}</span>
+                  <span className="mt-0.5 block text-xs text-fg-3">{timeAgo(n.createdAt)}</span>
                 </span>
               </button>
             </li>

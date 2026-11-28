@@ -78,7 +78,7 @@ export default function FriendsPage() {
 
       <SuggestionsPanel onSent={reload} />
 
-      <div role="tablist" aria-label="Friends and requests" className="inline-flex rounded-xl border border-white/10 bg-white/[0.04] p-1">
+      <div role="tablist" aria-label="Friends and requests" className="inline-flex rounded-xl border border-wash/10 bg-wash/[0.04] p-1">
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -88,13 +88,13 @@ export default function FriendsPage() {
             aria-controls={`panel-${t.id}`}
             onClick={() => setTab(t.id)}
             className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-jade-400/50 ${
-              tab === t.id ? "bg-white/10 text-ivory-50" : "text-ink-300 hover:text-ivory-50"
+              tab === t.id ? "bg-wash/10 text-fg" : "text-fg-2 hover:text-fg"
             }`}
           >
             {t.label}
             <span
               className={`rounded-full px-2 py-0.5 font-mono text-[10px] ${
-                t.highlight ? "bg-jade-400 text-ink-950" : "bg-white/[0.08] text-ink-300"
+                t.highlight ? "bg-jade-400 text-accent-ink" : "bg-wash/[0.08] text-fg-2"
               }`}
             >
               {t.count}

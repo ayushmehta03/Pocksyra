@@ -22,7 +22,7 @@ function RemoveButton({ onRemove }: { onRemove: () => Promise<void> }) {
   }
   return (
     <div className="flex items-center gap-2">
-      <span className="hidden text-xs text-ink-300 sm:inline">Remove friend?</span>
+      <span className="hidden text-xs text-fg-2 sm:inline">Remove friend?</span>
       <Button
         variant="danger"
         size="sm"
@@ -63,7 +63,7 @@ export function FriendsPanel({
     );
   }
   return (
-    <ul className="surface divide-y divide-white/[0.06]">
+    <ul className="surface divide-y divide-wash/[0.06]">
       {friends.map((e) => (
         <FriendRow
           key={e.id}

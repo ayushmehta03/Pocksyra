@@ -45,35 +45,35 @@ export function ExpenseRow({
         <CategoryTile id={expense.category} className="h-11 w-11" />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="truncate text-sm font-semibold text-ivory-50">{expense.description}</p>
+            <p className="truncate text-sm font-semibold text-fg">{expense.description}</p>
             <span className="hidden shrink-0 min-[420px]:inline-flex">
               <CategoryChip id={expense.category} />
             </span>
           </div>
-          <p className="truncate text-xs text-ink-400">
+          <p className="truncate text-xs text-fg-3">
             {iPaid ? "You" : (payer?.name ?? "Someone")} paid {formatMoney(expense.amount, expense.currency)} · {formatDate(expense.date)}
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[10px] uppercase tracking-wider text-ink-400">
+          <p className="text-[10px] uppercase tracking-wider text-fg-3">
             {personal ? "just you" : effect > 0 ? "you lent" : effect < 0 ? "you owe" : "not involved"}
           </p>
-          <p className={`font-mono text-sm font-medium ${effect > 0 ? "text-jade-300" : effect < 0 ? "text-gold-400" : "text-ink-400"}`}>
+          <p className={`font-mono text-sm font-medium ${effect > 0 ? "text-accent-text" : effect < 0 ? "text-warn" : "text-fg-3"}`}>
             {personal ? formatMoney(expense.amount, expense.currency) : effect === 0 ? "—" : formatMoney(Math.abs(effect), expense.currency)}
           </p>
         </div>
       </button>
 
       {open && (
-        <div className="mt-4 space-y-3 rounded-xl bg-white/[0.03] p-4">
+        <div className="mt-4 space-y-3 rounded-xl bg-wash/[0.03] p-4">
           <ul className="space-y-2">
             {expense.splits.map((s) => {
               const p = people[s.userId];
               return (
                 <li key={s.userId} className="flex items-center gap-3 text-sm">
                   <Avatar user={s.userId === meId ? { name: "You" } : (p ?? { name: "?" })} className="h-7 w-7 text-[10px]" />
-                  <span className="flex-1 truncate text-ivory-100">{s.userId === meId ? "You" : (p?.name ?? "Someone")}</span>
-                  <span className="font-mono text-ink-300">{formatMoney(s.amount, expense.currency)}</span>
+                  <span className="flex-1 truncate text-fg">{s.userId === meId ? "You" : (p?.name ?? "Someone")}</span>
+                  <span className="font-mono text-fg-2">{formatMoney(s.amount, expense.currency)}</span>
                 </li>
               );
             })}
@@ -81,7 +81,7 @@ export function ExpenseRow({
           {canDelete &&
             (confirming ? (
               <div className="flex items-center justify-end gap-2">
-                <span className="text-xs text-ink-300">Delete this expense? Balances will be reversed.</span>
+                <span className="text-xs text-fg-2">Delete this expense? Balances will be reversed.</span>
                 <Button
                   size="sm"
                   variant="danger"

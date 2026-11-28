@@ -54,12 +54,12 @@ export function PushCard() {
   return (
     <div className="surface space-y-4 p-6 sm:p-8">
       <div className="flex items-start gap-4">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-jade-300 ring-1 ring-white/10">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-accent-text ring-1 ring-wash/10">
           <BellIcon width={20} height={20} />
         </span>
         <div className="min-w-0">
-          <h2 className="text-lg font-semibold tracking-tight text-ivory-50">Push notifications</h2>
-          <p className="mt-1 text-sm leading-relaxed text-ink-300">{COPY[state]}</p>
+          <h2 className="text-lg font-semibold tracking-tight text-fg">Push notifications</h2>
+          <p className="mt-1 text-sm leading-relaxed text-fg-2">{COPY[state]}</p>
         </div>
       </div>
       <FormError message={error} />

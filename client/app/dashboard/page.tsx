@@ -54,10 +54,10 @@ function StatCard({
         </>
       )}
       <div className="relative flex items-center justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-300">{label}</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-fg-2">{label}</p>
         <span
           className={`flex h-9 w-9 items-center justify-center rounded-xl ${
-            featured ? "bg-jade-400/15 text-jade-300" : "bg-white/[0.06] text-ink-300"
+            featured ? "bg-jade-400/15 text-accent-text" : "bg-wash/[0.06] text-fg-2"
           }`}
         >
           <Icon width={18} height={18} />
@@ -65,12 +65,12 @@ function StatCard({
       </div>
       <p
         className={`relative mt-5 font-mono text-3xl font-medium tracking-tight ${
-          featured ? "text-gradient" : "text-ivory-50"
+          featured ? "text-gradient" : "text-fg"
         }`}
       >
         {amount}
       </p>
-      <p className="relative mt-2 text-xs text-ink-400">{note}</p>
+      <p className="relative mt-2 text-xs text-fg-3">{note}</p>
     </div>
   );
 }
@@ -88,17 +88,17 @@ function QuickAction({
 }) {
   const body = (
     <>
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/20 to-gold-400/10 text-jade-300 ring-1 ring-white/10">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/20 to-gold-400/10 text-accent-text ring-1 ring-wash/10">
         <Icon width={20} height={20} />
       </span>
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-ivory-50">{title}</p>
-        <p className="truncate text-xs text-ink-400">{text}</p>
+        <p className="text-sm font-semibold text-fg">{title}</p>
+        <p className="truncate text-xs text-fg-3">{text}</p>
       </div>
       {href ? (
-        <ArrowRightIcon width={16} height={16} className="ml-auto text-ink-400 transition group-hover:translate-x-0.5 group-hover:text-jade-300" />
+        <ArrowRightIcon width={16} height={16} className="ml-auto text-fg-3 transition group-hover:translate-x-0.5 group-hover:text-accent-text" />
       ) : (
-        <span className="ml-auto rounded-full border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-ink-400">
+        <span className="ml-auto rounded-full border border-wash/10 px-2 py-0.5 text-[10px] uppercase tracking-wider text-fg-3">
           Soon
         </span>
       )}
@@ -164,13 +164,13 @@ export default function OverviewPage() {
       {incomingCount > 0 && (
         <Link
           href="/dashboard/friends"
-          className="surface group flex items-center gap-3 px-5 py-4 text-sm text-ivory-100 outline-none ring-1 ring-jade-400/25 transition hover:ring-jade-400/50"
+          className="surface group flex items-center gap-3 px-5 py-4 text-sm text-fg outline-none ring-1 ring-jade-400/25 transition hover:ring-jade-400/50"
         >
-          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-jade-400 px-2 font-mono text-xs font-bold text-ink-950">
+          <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-jade-400 px-2 font-mono text-xs font-bold text-accent-ink">
             {incomingCount}
           </span>
           {incomingCount === 1 ? "friend request is" : "friend requests are"} waiting for you
-          <ArrowRightIcon width={16} height={16} className="ml-auto text-jade-300 transition group-hover:translate-x-0.5" />
+          <ArrowRightIcon width={16} height={16} className="ml-auto text-accent-text transition group-hover:translate-x-0.5" />
         </Link>
       )}
 
@@ -204,32 +204,32 @@ export default function OverviewPage() {
           {!recentLoading && recent.length > 0 ? (
             <div className="surface h-full">
               <div className="flex items-baseline justify-between px-6 pt-6">
-                <h2 className="text-lg font-semibold tracking-tight text-ivory-50">Recent expenses</h2>
-                <Link href="/dashboard/expenses" className="text-xs font-medium text-jade-300 hover:underline">
+                <h2 className="text-lg font-semibold tracking-tight text-fg">Recent expenses</h2>
+                <Link href="/dashboard/expenses" className="text-xs font-medium text-accent-text hover:underline">
                   See all
                 </Link>
               </div>
-              <ul className="mt-3 divide-y divide-white/[0.06]">
+              <ul className="mt-3 divide-y divide-wash/[0.06]">
                 {recent.map((e) => (
                   <li key={e.id} className="flex items-center gap-3 px-6 py-3.5">
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-ivory-50">{e.description}</p>
-                      <p className="truncate text-xs text-ink-400">
+                      <p className="truncate text-sm font-medium text-fg">{e.description}</p>
+                      <p className="truncate text-xs text-fg-3">
                         {e.paidBy === user.id ? "You" : (recentPeople[e.paidBy]?.name ?? "Someone")} paid
                       </p>
                     </div>
-                    <p className="font-mono text-sm text-ink-300">{formatMoney(e.amount, e.currency)}</p>
+                    <p className="font-mono text-sm text-fg-2">{formatMoney(e.amount, e.currency)}</p>
                   </li>
                 ))}
               </ul>
             </div>
           ) : (
             <div className="surface flex h-full min-h-[320px] flex-col items-center justify-center p-10 text-center">
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-jade-300 ring-1 ring-white/10">
+              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-accent-text ring-1 ring-wash/10">
                 <ReceiptIcon width={28} height={28} />
               </span>
-              <h2 className="mt-6 text-xl font-semibold tracking-tight text-ivory-50">Nothing here yet</h2>
-              <p className="mt-2 max-w-sm text-sm leading-relaxed text-ink-300">
+              <h2 className="mt-6 text-xl font-semibold tracking-tight text-fg">Nothing here yet</h2>
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-fg-2">
                 Your shared expenses will appear here, newest first.
               </p>
             </div>
@@ -239,13 +239,13 @@ export default function OverviewPage() {
         <section className="lg:col-span-2">
           <div className="surface p-6">
             <div className="flex items-baseline justify-between">
-              <h2 className="text-lg font-semibold tracking-tight text-ivory-50">Getting started</h2>
-              <span className="font-mono text-xs text-ink-400">
+              <h2 className="text-lg font-semibold tracking-tight text-fg">Getting started</h2>
+              <span className="font-mono text-xs text-fg-3">
                 {doneCount}/{steps.length}
               </span>
             </div>
             <div
-              className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10"
+              className="mt-4 h-1.5 overflow-hidden rounded-full bg-wash/10"
               role="progressbar"
               aria-valuenow={doneCount}
               aria-valuemin={0}
@@ -261,15 +261,15 @@ export default function OverviewPage() {
                 <li key={s.label} className="flex items-center gap-3 text-sm">
                   <span
                     className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                      s.done ? "bg-jade-400 text-ink-950" : "border border-white/15 text-transparent"
+                      s.done ? "bg-jade-400 text-accent-ink" : "border border-wash/15 text-transparent"
                     }`}
                   >
                     <CheckIcon width={14} height={14} strokeWidth={2.6} />
                   </span>
-                  <span className={s.done ? "text-ink-400 line-through decoration-ink-500" : "text-ivory-100"}>
+                  <span className={s.done ? "text-fg-3 line-through decoration-fg-4" : "text-fg"}>
                     {s.label}
                   </span>
-                  {s.install && <DownloadIcon width={16} height={16} className="ml-auto text-ink-400" />}
+                  {s.install && <DownloadIcon width={16} height={16} className="ml-auto text-fg-3" />}
                 </li>
               ))}
             </ul>

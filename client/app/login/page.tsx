@@ -67,16 +67,16 @@ export default function LoginPage() {
         <button
           onClick={signIn}
           disabled={redirecting}
-          className="flex w-full items-center justify-center gap-3 rounded-xl bg-white px-5 py-3.5 text-[15px] font-semibold text-ink-900 shadow-[0_12px_30px_-12px_rgba(255,255,255,0.35)] outline-none transition hover:bg-ivory-100 focus-visible:ring-4 focus-visible:ring-white/30 disabled:cursor-wait disabled:opacity-70"
+          className="flex w-full items-center justify-center gap-3 rounded-xl border border-wash/15 bg-panel px-5 py-3.5 text-[15px] font-semibold text-fg shadow-[var(--shadow-card)] outline-none transition hover:bg-panel-2 focus-visible:ring-4 focus-visible:ring-accent/30 disabled:cursor-wait disabled:opacity-70"
         >
           {redirecting ? (
-            <span className="h-5 w-5 animate-spin rounded-full border-2 border-ink-300 border-t-ink-900" />
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-fg-2 border-t-fg" />
           ) : (
             <GoogleLogo />
           )}
           {redirecting ? "Redirecting to Google…" : "Continue with Google"}
         </button>
-        <p className="text-center text-xs leading-relaxed text-ink-400">
+        <p className="text-center text-xs leading-relaxed text-fg-3">
           New here? Signing in creates your account automatically.
         </p>
       </div>

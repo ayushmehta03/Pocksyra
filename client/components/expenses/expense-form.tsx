@@ -223,15 +223,15 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
 
       <section className="surface space-y-4 p-6" aria-label="Who is sharing">
         <div>
-          <h2 className="text-sm font-semibold text-ivory-50">Split with <span className="font-normal text-ink-400">(optional)</span></h2>
-          <p className="mt-1 text-xs text-ink-400">Leave everyone unselected to log it as just your own expense.</p>
+          <h2 className="text-sm font-semibold text-fg">Split with <span className="font-normal text-fg-3">(optional)</span></h2>
+          <p className="mt-1 text-xs text-fg-3">Leave everyone unselected to log it as just your own expense.</p>
         </div>
         {friendsLoading ? (
-          <p className="text-sm text-ink-400">Loading friends…</p>
+          <p className="text-sm text-fg-3">Loading friends…</p>
         ) : friends.length === 0 ? (
-          <p className="text-sm text-ink-300">
+          <p className="text-sm text-fg-2">
             No friends yet, so this will be just your own expense.{" "}
-            <Link href="/dashboard/friends" className="text-jade-300 underline underline-offset-4">
+            <Link href="/dashboard/friends" className="text-accent-text underline underline-offset-4">
               Add a friend
             </Link>{" "}
             to split bills.
@@ -248,8 +248,8 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
                   onClick={() => toggle(f.id)}
                   className={`flex items-center gap-2.5 rounded-full border py-1.5 pl-1.5 pr-4 text-sm font-medium outline-none transition focus-visible:ring-4 focus-visible:ring-jade-400/25 ${
                     on
-                      ? "border-jade-400/60 bg-jade-400/15 text-ivory-50"
-                      : "border-white/10 bg-white/[0.04] text-ink-300 hover:bg-white/[0.08]"
+                      ? "border-jade-400/60 bg-jade-400/15 text-fg"
+                      : "border-wash/10 bg-wash/[0.04] text-fg-2 hover:bg-wash/[0.08]"
                   }`}
                 >
                   <Avatar user={f} className="h-7 w-7 text-[10px]" />
@@ -274,8 +274,8 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
       {selected.size > 0 && (
         <section className="surface space-y-5 p-6" aria-label="How to split">
           <div>
-            <h2 className="text-sm font-semibold text-ivory-50">How to split</h2>
-            <div role="tablist" className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-white/[0.05] p-1">
+            <h2 className="text-sm font-semibold text-fg">How to split</h2>
+            <div role="tablist" className="mt-3 grid grid-cols-4 gap-1 rounded-xl bg-wash/[0.05] p-1">
               {METHODS.map((m) => (
                 <button
                   type="button"
@@ -284,24 +284,24 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
                   aria-selected={method === m.id}
                   onClick={() => setMethod(m.id)}
                   className={`rounded-lg px-2 py-2 text-xs font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-jade-400/40 ${
-                    method === m.id ? "bg-jade-400 text-ink-950" : "text-ink-300 hover:text-ivory-50"
+                    method === m.id ? "bg-jade-400 text-accent-ink" : "text-fg-2 hover:text-fg"
                   }`}
                 >
                   {m.label}
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-xs text-ink-400">{METHODS.find((m) => m.id === method)?.hint}</p>
+            <p className="mt-2 text-xs text-fg-3">{METHODS.find((m) => m.id === method)?.hint}</p>
           </div>
 
-          <ul className="divide-y divide-white/[0.06]">
+          <ul className="divide-y divide-wash/[0.06]">
             {participantIds.map((id) => {
               const person = everyone.find((p) => p.id === id)!;
               const share = result?.ok ? result.shares.get(id) : undefined;
               return (
                 <li key={id} className="flex items-center gap-3 py-3">
                   <Avatar user={person} className="h-9 w-9 shrink-0 text-xs" />
-                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-ivory-50">{person.name}</span>
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium text-fg">{person.name}</span>
                   {method !== "equal" && (
                     <input
                       aria-label={`${person.name}: ${method}`}
@@ -309,17 +309,17 @@ export function ExpenseForm({ presetFriendId }: { presetFriendId?: string }) {
                       value={values[id] ?? (method === "shares" ? "1" : "")}
                       placeholder={method === "percent" ? "0 %" : method === "shares" ? "1" : "0.00"}
                       onChange={(e) => setValues((v) => ({ ...v, [id]: e.target.value }))}
-                      className="w-24 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-2 text-right font-mono text-sm text-ivory-50 outline-none focus:border-jade-400/70"
+                      className="w-24 rounded-lg border border-wash/10 bg-wash/[0.04] px-3 py-2 text-right font-mono text-sm text-fg outline-none focus:border-jade-400/70"
                     />
                   )}
-                  <span className="w-28 text-right font-mono text-sm text-jade-300">
+                  <span className="w-28 text-right font-mono text-sm text-accent-text">
                     {share !== undefined ? formatMoney(share, currency) : "—"}
                   </span>
                 </li>
               );
             })}
           </ul>
-          {splitError && amountText.trim() && <p className="text-xs font-medium text-gold-400">{splitError}</p>}
+          {splitError && amountText.trim() && <p className="text-xs font-medium text-warn">{splitError}</p>}
         </section>
       )}
 

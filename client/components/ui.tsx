@@ -9,19 +9,19 @@ import {
 import { ArrowRightIcon } from "@/components/icons";
 
 const inputBase =
-  "w-full rounded-xl border bg-white/[0.04] px-4 py-3 text-[15px] text-ivory-50 placeholder:text-ink-400 outline-none " +
-  "transition focus:border-jade-400/70 focus:bg-white/[0.06] focus:ring-4 focus:ring-jade-400/15";
+  "w-full rounded-xl border bg-panel-2 px-4 py-3 text-[15px] text-fg placeholder:text-fg-3 outline-none " +
+  "transition focus:border-accent focus:ring-4 focus:ring-accent/20";
 
-const labelCls = "block text-[13px] font-medium tracking-wide text-ink-300";
+const labelCls = "block text-[13px] font-medium tracking-wide text-fg-2";
 
 function Message({ id, error, hint }: { id: string; error?: string; hint?: string }) {
   if (error)
     return (
-      <p id={`${id}-err`} className="text-xs font-medium text-red-400">
+      <p id={`${id}-err`} className="text-xs font-medium text-danger">
         {error}
       </p>
     );
-  if (hint) return <p className="text-xs text-ink-400">{hint}</p>;
+  if (hint) return <p className="text-xs text-fg-3">{hint}</p>;
   return null;
 }
 
@@ -44,7 +44,7 @@ export function Field({ label, error, hint, warn, className = "", ...props }: Fi
         id={id}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-err` : undefined}
-        className={`${inputBase} ${error ? "border-red-400/70" : warn ? "border-gold-400/70" : "border-white/10"} ${className}`}
+        className={`${inputBase} ${error ? "border-danger/70" : warn ? "border-warn/70" : "border-wash/10"} ${className}`}
         {...props}
       />
       <Message id={id} error={error} hint={hint} />
@@ -64,7 +64,7 @@ export function SelectField({
       <label htmlFor={id} className={labelCls}>
         {label}
       </label>
-      <select id={id} className={`${inputBase} border-white/10 ${className}`} {...props}>
+      <select id={id} className={`${inputBase} border-wash/10 ${className}`} {...props}>
         {children}
       </select>
     </div>
@@ -89,20 +89,17 @@ export function Button({
   ...props
 }: ButtonProps) {
   const styles = {
-    primary:
-      "bg-gradient-to-b from-jade-400 to-jade-500 text-ink-950 hover:from-jade-300 hover:to-jade-400 shadow-[0_10px_30px_-10px_rgba(63,214,163,0.55)] focus-visible:ring-jade-400/30",
-    ghost:
-      "border border-white/10 bg-white/[0.04] text-ivory-100 hover:bg-white/[0.08] focus-visible:ring-white/20",
-    light:
-      "bg-white text-ink-900 hover:bg-ivory-100 shadow-[0_10px_30px_-12px_rgba(255,255,255,0.35)] focus-visible:ring-white/30",
-    danger:
-      "border border-red-400/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 focus-visible:ring-red-400/30",
+    primary: "bg-accent text-accent-ink hover:brightness-110 focus-visible:ring-accent/30",
+    ghost: "border border-wash/10 bg-transparent text-fg hover:bg-wash/5 focus-visible:ring-wash/20",
+    // The opposite of the page: dark on day mode, light on night mode.
+    light: "bg-fg text-page hover:opacity-90 focus-visible:ring-wash/30",
+    danger: "border border-danger/30 bg-danger/10 text-danger hover:bg-danger/15 focus-visible:ring-danger/30",
   }[variant];
   const sizing = { md: "px-5 py-3 text-sm", sm: "px-3.5 py-2 text-xs" }[size];
   return (
     <button
       disabled={disabled || loading}
-      className={`group inline-flex items-center justify-center gap-2 rounded-xl font-semibold outline-none transition focus-visible:ring-4 disabled:cursor-not-allowed disabled:opacity-50 ${sizing} ${styles} ${className}`}
+      className={`group inline-flex items-center justify-center gap-2 rounded-xl font-semibold outline-none transition duration-150 focus-visible:ring-4 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100 ${sizing} ${styles} ${className}`}
       {...props}
     >
       {loading && (
@@ -119,7 +116,7 @@ export function Button({
 export function FormError({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <div role="alert" className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+    <div role="alert" className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
       {message}
     </div>
   );
@@ -128,7 +125,7 @@ export function FormError({ message }: { message?: string }) {
 export function Spinner({ label = "Loading" }: { label?: string }) {
   return (
     <div className="flex min-h-screen items-center justify-center" role="status" aria-label={label}>
-      <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-jade-400 border-t-transparent" />
+      <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-accent border-t-transparent" />
     </div>
   );
 }

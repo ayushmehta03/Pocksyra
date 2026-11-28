@@ -32,12 +32,12 @@ export function InstallCard() {
 
   return (
     <div className="surface relative flex flex-col gap-4 p-5 ring-1 ring-jade-400/25 sm:flex-row sm:items-center">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-jade-300 ring-1 ring-white/10">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-accent-text ring-1 ring-wash/10">
         <DownloadIcon width={20} height={20} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-ivory-50">Install Pocksyra</p>
-        <p className="text-xs leading-relaxed text-ink-300">
+        <p className="text-sm font-semibold text-fg">Install Pocksyra</p>
+        <p className="text-xs leading-relaxed text-fg-2">
           {canInstall
             ? "Add it to your home screen for a full-screen app that opens instantly."
             : "In Safari, tap the Share button, then “Add to Home Screen”."}

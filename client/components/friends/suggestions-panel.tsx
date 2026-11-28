@@ -68,17 +68,17 @@ export function SuggestionsPanel({ onSent }: { onSent: () => Promise<void> | voi
 
   return (
     <section className="space-y-3" aria-label="People you may know">
-      <h2 className="text-sm font-semibold text-ivory-50">People you may know</h2>
+      <h2 className="text-sm font-semibold text-fg">People you may know</h2>
       <FormError message={error} />
-      <ul className="surface divide-y divide-white/[0.06]">
+      <ul className="surface divide-y divide-wash/[0.06]">
         {items.map((s) => {
           const requested = sent.has(s.user.id);
           return (
             <li key={s.user.id} className="flex items-center gap-4 px-5 py-4">
               <Avatar user={s.user} className="h-11 w-11 shrink-0 text-sm" />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-ivory-50">{s.user.name}</p>
-                <p className="truncate text-xs text-ink-400">
+                <p className="truncate text-sm font-semibold text-fg">{s.user.name}</p>
+                <p className="truncate text-xs text-fg-3">
                   @{s.user.username} · {s.mutualFriends} mutual {s.mutualFriends === 1 ? "friend" : "friends"}
                 </p>
               </div>

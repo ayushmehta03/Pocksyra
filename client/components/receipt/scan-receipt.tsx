@@ -124,27 +124,27 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
   return (
     <div className="surface space-y-4 p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-jade-300 ring-1 ring-white/10">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-jade-400/25 to-gold-400/10 text-accent-text ring-1 ring-wash/10">
           <ScanIcon width={20} height={20} />
         </span>
 
         <div className="min-w-0 flex-1" aria-live="polite">
-          <p className="text-sm font-semibold text-ivory-50">Scan a receipt</p>
+          <p className="text-sm font-semibold text-fg">Scan a receipt</p>
           {state.kind === "idle" && (
-            <p className="text-xs leading-relaxed text-ink-300">
+            <p className="text-xs leading-relaxed text-fg-2">
               Choose a photo or a PDF and we&apos;ll fill in the details. It&apos;s read on your device; the file is never uploaded.
             </p>
           )}
           {scanning && (
             <div className="mt-1 space-y-2">
-              <p className="text-xs text-ink-300">{friendly(state.progress)}</p>
-              <div className="h-1.5 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+              <p className="text-xs text-fg-2">{friendly(state.progress)}</p>
+              <div className="h-1.5 overflow-hidden rounded-full bg-wash/10" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
                 <div className="h-full rounded-full bg-gradient-to-r from-jade-400 to-gold-300 transition-all" style={{ width: `${Math.max(pct, 4)}%` }} />
               </div>
             </div>
           )}
           {state.kind === "done" && (
-            <p className="text-xs leading-relaxed text-ink-300">
+            <p className="text-xs leading-relaxed text-fg-2">
               Filled in{" "}
               {[
                 state.result.merchant?.value,
@@ -155,11 +155,11 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
                 .join(" · ") || "what we could read"}
               .{" "}
               {[state.result.merchant, state.result.total, state.result.date].some((f) => f && f.confidence < LOW_CONFIDENCE) && (
-                <span className="font-medium text-gold-400">Yellow fields need a quick check.</span>
+                <span className="font-medium text-warn">Yellow fields need a quick check.</span>
               )}
             </p>
           )}
-          {state.kind === "error" && <p className="text-xs font-medium text-red-300">{state.message}</p>}
+          {state.kind === "error" && <p className="text-xs font-medium text-danger">{state.message}</p>}
         </div>
 
         <input
@@ -177,7 +177,7 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
       </div>
 
       {ai.kind !== "none" && (
-        <div className="rounded-xl bg-white/[0.04] p-4 text-xs leading-relaxed text-ink-300" aria-live="polite">
+        <div className="rounded-xl bg-wash/[0.04] p-4 text-xs leading-relaxed text-fg-2" aria-live="polite">
           {ai.kind === "unsupported" && (
             <p>Some fields couldn&apos;t be read. This browser can&apos;t run on-device AI (it needs WebGPU), so please fill them in by hand.</p>
           )}
@@ -193,8 +193,8 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
           )}
           {ai.kind === "running" && (
             <div className="space-y-2">
-              <p>{ai.progress < 1 ? "Getting the AI ready…" : "Reading the receipt…"} {ai.text && <span className="text-ink-400">{ai.text}</span>}</p>
-              <div className="h-1.5 overflow-hidden rounded-full bg-white/10" role="progressbar" aria-valuenow={Math.round(ai.progress * 100)} aria-valuemin={0} aria-valuemax={100}>
+              <p>{ai.progress < 1 ? "Getting the AI ready…" : "Reading the receipt…"} {ai.text && <span className="text-fg-3">{ai.text}</span>}</p>
+              <div className="h-1.5 overflow-hidden rounded-full bg-wash/10" role="progressbar" aria-valuenow={Math.round(ai.progress * 100)} aria-valuemin={0} aria-valuemax={100}>
                 <div className="h-full rounded-full bg-gradient-to-r from-jade-400 to-gold-300 transition-all" style={{ width: `${Math.max(Math.round(ai.progress * 100), 4)}%` }} />
               </div>
             </div>
@@ -203,7 +203,7 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
             <p>
               {ai.filled.length > 0 ? (
                 <>
-                  AI filled in <span className="font-medium text-jade-300">{ai.filled.join(", ")}</span>. Please check it against the receipt.
+                  AI filled in <span className="font-medium text-accent-text">{ai.filled.join(", ")}</span>. Please check it against the receipt.
                 </>
               ) : (
                 "The AI couldn't find anything more in this receipt. Please fill in the rest by hand."
@@ -212,7 +212,7 @@ export function ScanReceipt({ onResult }: { onResult: (r: ScanResult) => void })
           )}
           {ai.kind === "failed" && (
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <p className="flex-1 text-red-300">{ai.message}</p>
+              <p className="flex-1 text-danger">{ai.message}</p>
               <Button type="button" size="sm" variant="ghost" onClick={() => void runAi(ai.result)}>
                 Try again
               </Button>

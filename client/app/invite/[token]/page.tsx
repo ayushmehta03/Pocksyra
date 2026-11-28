@@ -72,8 +72,8 @@ export default function InvitePage() {
         <div className="surface space-y-6 p-8 text-center">
           {invalid ? (
             <>
-              <h1 className="text-2xl font-semibold tracking-tight text-ivory-50">This invite isn&apos;t valid</h1>
-              <p className="text-sm leading-relaxed text-ink-300">
+              <h1 className="text-2xl font-semibold tracking-tight text-fg">This invite isn&apos;t valid</h1>
+              <p className="text-sm leading-relaxed text-fg-2">
                 It may have expired or already been used. Ask your friend for a new link.
               </p>
               <Button onClick={() => router.replace("/dashboard")} className="w-full">
@@ -82,8 +82,8 @@ export default function InvitePage() {
             </>
           ) : preview?.own ? (
             <>
-              <h1 className="text-2xl font-semibold tracking-tight text-ivory-50">This is your own link</h1>
-              <p className="text-sm leading-relaxed text-ink-300">
+              <h1 className="text-2xl font-semibold tracking-tight text-fg">This is your own link</h1>
+              <p className="text-sm leading-relaxed text-fg-2">
                 Share it with a friend. When they open it and accept, you&apos;ll be connected.
               </p>
               <Button onClick={() => router.replace("/dashboard/friends")} className="w-full">
@@ -96,10 +96,10 @@ export default function InvitePage() {
                 <Avatar user={preview.inviter} className="h-20 w-20 text-2xl" />
               </div>
               <div className="space-y-2">
-                <h1 className="text-2xl font-semibold tracking-tight text-ivory-50">
+                <h1 className="text-2xl font-semibold tracking-tight text-fg">
                   {preview.inviter.name} invited you
                 </h1>
-                <p className="text-sm leading-relaxed text-ink-300">
+                <p className="text-sm leading-relaxed text-fg-2">
                   @{preview.inviter.username} wants to connect on Pocksyra so you can split expenses together.
                 </p>
               </div>

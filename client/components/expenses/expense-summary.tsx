@@ -51,18 +51,18 @@ export function ExpenseSummary({
     <section className="surface space-y-5 p-5" aria-label="This month">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-wider text-ink-400">Your share this month</p>
-          <p className="mt-1 font-mono text-2xl font-semibold text-ivory-50">{formatMoney(share, currency)}</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-fg-3">Your share this month</p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-fg">{formatMoney(share, currency)}</p>
         </div>
         <div>
-          <p className="text-[10px] font-medium uppercase tracking-wider text-ink-400">You paid</p>
-          <p className="mt-1 font-mono text-2xl font-semibold text-ivory-50">{formatMoney(paid, currency)}</p>
+          <p className="text-[10px] font-medium uppercase tracking-wider text-fg-3">You paid</p>
+          <p className="mt-1 font-mono text-2xl font-semibold text-fg">{formatMoney(paid, currency)}</p>
         </div>
       </div>
 
       {cats.length > 0 && (
         <div className="space-y-3">
-          <div className="flex h-2 overflow-hidden rounded-full bg-white/10" role="img" aria-label="Spending by category">
+          <div className="flex h-2 overflow-hidden rounded-full bg-wash/10" role="img" aria-label="Spending by category">
             {cats.map(([id, amount]) => (
               <div key={id} className={categoryTone(id).bar} style={{ width: `${(amount / share) * 100}%` }} />
             ))}
@@ -74,12 +74,12 @@ export function ExpenseSummary({
                   type="button"
                   onClick={() => onPick(active === id ? "all" : id)}
                   className={`flex items-center gap-1.5 rounded-md text-xs outline-none transition-colors focus-visible:ring-2 focus-visible:ring-jade-400/40 ${
-                    active === id ? "text-ivory-50" : "text-ink-300 hover:text-ivory-100"
+                    active === id ? "text-fg" : "text-fg-2 hover:text-fg"
                   }`}
                 >
                   <span className={`h-2 w-2 rounded-full ${categoryTone(id).dot}`} />
                   {categoryLabel(id)}
-                  <span className="font-mono text-ink-400">{formatMoney(amount, currency)}</span>
+                  <span className="font-mono text-fg-3">{formatMoney(amount, currency)}</span>
                 </button>
               </li>
             ))}

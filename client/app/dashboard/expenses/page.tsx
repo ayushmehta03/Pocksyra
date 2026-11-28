@@ -116,7 +116,7 @@ export default function ExpensesPage() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search expenses"
               aria-label="Search expenses"
-              className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-ivory-50 outline-none placeholder:text-ink-400 focus:border-jade-400/50"
+              className="w-full rounded-xl border border-wash/10 bg-wash/[0.04] px-4 py-2.5 text-sm text-fg outline-none placeholder:text-fg-3 focus:border-jade-400/50"
             />
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1" role="group" aria-label="Filter by category">
               <button
@@ -124,7 +124,7 @@ export default function ExpensesPage() {
                 onClick={() => setCategory("all")}
                 aria-pressed={category === "all"}
                 className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                  category === "all" ? "bg-ivory-50 text-ink-900" : "bg-white/[0.06] text-ink-300 hover:bg-white/10"
+                  category === "all" ? "bg-fg text-page" : "bg-wash/[0.06] text-fg-2 hover:bg-wash/10"
                 }`}
               >
                 All <span className="font-mono opacity-60">{expenses.length}</span>
@@ -138,7 +138,7 @@ export default function ExpensesPage() {
                     onClick={() => setCategory(on ? "all" : id)}
                     aria-pressed={on}
                     className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                      on ? "bg-ivory-50 text-ink-900" : `${categoryTone(id).chip} hover:brightness-125`
+                      on ? "bg-fg text-page" : `${categoryTone(id).chip} hover:brightness-125`
                     }`}
                   >
                     <CategoryIcon id={id} width={14} height={14} />
@@ -150,7 +150,7 @@ export default function ExpensesPage() {
           </div>
 
           {groups.length === 0 ? (
-            <p className="py-10 text-center text-sm text-ink-400">Nothing matches. Try another category or search.</p>
+            <p className="py-10 text-center text-sm text-fg-3">Nothing matches. Try another category or search.</p>
           ) : (
             <div className="space-y-5">
               {groups.map(([key, items]) => {
@@ -159,10 +159,10 @@ export default function ExpensesPage() {
                 return (
                   <section key={key} aria-label={dayLabel(key)}>
                     <div className="mb-2 flex items-baseline justify-between px-1">
-                      <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-300">{dayLabel(key)}</h2>
-                      {dayShare > 0 && <span className="font-mono text-xs text-ink-400">your share {formatMoney(dayShare, currency)}</span>}
+                      <h2 className="text-xs font-semibold uppercase tracking-wider text-fg-2">{dayLabel(key)}</h2>
+                      {dayShare > 0 && <span className="font-mono text-xs text-fg-3">your share {formatMoney(dayShare, currency)}</span>}
                     </div>
-                    <ul className="surface divide-y divide-white/[0.06]">
+                    <ul className="surface divide-y divide-wash/[0.06]">
                       {items.map((e) => (
                         <ExpenseRow key={e.id} expense={e} people={people} meId={user.id} onDelete={remove} />
                       ))}

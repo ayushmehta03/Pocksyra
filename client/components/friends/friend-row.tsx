@@ -38,10 +38,10 @@ function Person({ friend, note }: { friend: FriendEntry["friend"]; note?: string
     <>
       <Avatar user={friend} className="h-11 w-11 shrink-0 text-sm" />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-ivory-50">{friend.name}</p>
-        <p className="truncate text-xs text-ink-400">
+        <p className="truncate text-sm font-semibold text-fg">{friend.name}</p>
+        <p className="truncate text-xs text-fg-3">
           @{friend.username}
-          {note && <span className="text-ink-500"> · {note}</span>}
+          {note && <span className="text-fg-4"> · {note}</span>}
         </p>
       </div>
     </>

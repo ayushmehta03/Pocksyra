@@ -43,17 +43,17 @@ function PendingRow({
       <div className="flex flex-wrap items-center gap-4">
         {other && <Avatar user={other} className="h-11 w-11 shrink-0 text-sm" />}
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-ivory-50">
+          <p className="truncate text-sm font-semibold text-fg">
             {incoming
               ? `${other?.name ?? "A friend"} says they paid you`
               : `Waiting for ${other?.name ?? "your friend"} to confirm`}
           </p>
-          <p className="truncate text-xs text-ink-400">
+          <p className="truncate text-xs text-fg-3">
             {formatDate(s.date)}
             {s.note && ` · ${s.note}`}
           </p>
         </div>
-        <p className="font-mono text-sm font-medium text-ivory-50">{formatMoney(s.amount, s.currency)}</p>
+        <p className="font-mono text-sm font-medium text-fg">{formatMoney(s.amount, s.currency)}</p>
         <div className="flex gap-2">
           {actions.map((a) => (
             <Button
@@ -104,8 +104,8 @@ export function PendingPayments({
 
   return (
     <section className="space-y-3" aria-label="Payments waiting for confirmation">
-      <h2 className="text-sm font-semibold text-ivory-50">Waiting for confirmation</h2>
-      <ul className="surface divide-y divide-white/[0.06]">
+      <h2 className="text-sm font-semibold text-fg">Waiting for confirmation</h2>
+      <ul className="surface divide-y divide-wash/[0.06]">
         {incoming.map((s) => (
           <PendingRow
             key={s.id}
@@ -131,7 +131,7 @@ export function PendingPayments({
         ))}
       </ul>
       {incoming.length > 0 && (
-        <p className="text-xs text-ink-400">
+        <p className="text-xs text-fg-3">
           Tap Got it only once the money is in your account. The balance changes when you do.
         </p>
       )}

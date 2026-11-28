@@ -55,8 +55,8 @@ export function InviteCard() {
   return (
     <div className="surface relative flex h-full flex-col overflow-hidden p-6">
       <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-500/15 blur-[60px]" />
-      <h2 className="relative text-base font-semibold tracking-tight text-ivory-50">Invite with a link</h2>
-      <p className="relative mt-1 text-xs leading-relaxed text-ink-400">
+      <h2 className="relative text-base font-semibold tracking-tight text-fg">Invite with a link</h2>
+      <p className="relative mt-1 text-xs leading-relaxed text-fg-3">
         For friends who aren&apos;t on Pocksyra yet. Each link works once and expires in 7 days.
       </p>
 
@@ -70,13 +70,13 @@ export function InviteCard() {
                 value={link.url}
                 onFocus={(e) => e.target.select()}
                 aria-label="Invite link"
-                className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 font-mono text-xs text-ivory-100 outline-none focus:border-jade-400/70"
+                className="min-w-0 flex-1 rounded-xl border border-wash/10 bg-wash/[0.04] px-3.5 py-2.5 font-mono text-xs text-fg outline-none focus:border-jade-400/70"
               />
               <Button variant="ghost" size="sm" onClick={copy} className="shrink-0">
                 {copied ? "Copied" : "Copy"}
               </Button>
             </div>
-            <p className="text-xs text-ink-400">Expires {formatDate(link.expiresAt)}</p>
+            <p className="text-xs text-fg-3">Expires {formatDate(link.expiresAt)}</p>
           </>
         ) : null}
       </div>

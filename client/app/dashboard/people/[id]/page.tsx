@@ -40,9 +40,9 @@ export default function ProfilePage() {
   if (missing) {
     return (
       <div className="surface space-y-3 p-8 text-center">
-        <p className="text-lg font-semibold text-ivory-50">Profile not available</p>
-        <p className="text-sm text-ink-300">You can only see the profiles of your friends.</p>
-        <Link href="/dashboard/friends" className="text-sm font-medium text-jade-300 underline underline-offset-2">
+        <p className="text-lg font-semibold text-fg">Profile not available</p>
+        <p className="text-sm text-fg-2">You can only see the profiles of your friends.</p>
+        <Link href="/dashboard/friends" className="text-sm font-medium text-accent-text underline underline-offset-2">
           Back to friends
         </Link>
       </div>
@@ -56,19 +56,19 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <Link href="/dashboard/friends" className="text-xs font-medium text-ink-300 hover:text-ivory-50">
+      <Link href="/dashboard/friends" className="text-xs font-medium text-fg-2 hover:text-fg">
         ← Friends
       </Link>
 
       <section className="surface flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:p-8">
         <Avatar user={user} className="h-20 w-20 shrink-0 text-2xl" />
         <div className="min-w-0 flex-1 space-y-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-jade-300">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-accent-text">
             {profile.isSelf ? "Your profile" : "Profile"}
           </p>
-          <h1 className="truncate text-2xl font-semibold tracking-tight text-ivory-50 sm:text-3xl">{user.name}</h1>
-          <p className="truncate text-sm text-ink-400">@{user.username}</p>
-          <p className="pt-1 text-xs text-ink-300">
+          <h1 className="truncate text-2xl font-semibold tracking-tight text-fg sm:text-3xl">{user.name}</h1>
+          <p className="truncate text-sm text-fg-3">@{user.username}</p>
+          <p className="pt-1 text-xs text-fg-2">
             Member since {formatDate(profile.memberSince)} · {profile.friends} {profile.friends === 1 ? "friend" : "friends"}
             {profile.mutualFriends !== undefined &&
               ` · ${profile.mutualFriends} mutual ${profile.mutualFriends === 1 ? "friend" : "friends"}`}
@@ -81,28 +81,28 @@ export default function ProfilePage() {
       </section>
 
       <section className="space-y-3" aria-label="Badges">
-        <h2 className="text-sm font-semibold text-ivory-50">
-          Badges <span className="font-normal text-ink-400">· {earned.length} of {badges.length}</span>
+        <h2 className="text-sm font-semibold text-fg">
+          Badges <span className="font-normal text-fg-3">· {earned.length} of {badges.length}</span>
         </h2>
         <ul className="grid gap-3 sm:grid-cols-2">
           {badges.map((b) => (
             <li
               key={b.id}
               className={`flex items-start gap-3 rounded-2xl border p-4 ${
-                b.earned ? "border-jade-400/30 bg-jade-400/[0.06]" : "border-white/10 bg-white/[0.02] opacity-60"
+                b.earned ? "border-jade-400/30 bg-jade-400/[0.06]" : "border-wash/10 bg-wash/[0.02] opacity-60"
               }`}
             >
               <span
                 className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                  b.earned ? "bg-jade-400 text-ink-950" : "bg-white/10 text-ink-400"
+                  b.earned ? "bg-jade-400 text-accent-ink" : "bg-wash/10 text-fg-3"
                 }`}
               >
                 {b.earned ? <CheckIcon width={14} height={14} /> : <span className="h-1.5 w-1.5 rounded-full bg-current" />}
               </span>
               <div className="min-w-0">
-                <p className="text-sm font-medium text-ivory-50">{b.label}</p>
-                <p className="text-xs leading-relaxed text-ink-300">{b.description}</p>
-                {!b.earned && <p className="mt-1 text-[11px] text-ink-500">Not earned yet</p>}
+                <p className="text-sm font-medium text-fg">{b.label}</p>
+                <p className="text-xs leading-relaxed text-fg-2">{b.description}</p>
+                {!b.earned && <p className="mt-1 text-[11px] text-fg-4">Not earned yet</p>}
               </div>
             </li>
           ))}

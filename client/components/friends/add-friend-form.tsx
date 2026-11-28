@@ -50,12 +50,12 @@ export function AddFriendForm({ onSent }: { onSent: () => void }) {
   return (
     <form onSubmit={submit} noValidate className="surface space-y-5 p-6">
       <div className="flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-jade-400/15 text-jade-300">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-jade-400/15 text-accent-text">
           <UserPlusIcon width={20} height={20} />
         </span>
         <div>
-          <h2 className="text-base font-semibold tracking-tight text-ivory-50">Add a friend</h2>
-          <p className="text-xs text-ink-400">They&apos;ll get a request to accept.</p>
+          <h2 className="text-base font-semibold tracking-tight text-fg">Add a friend</h2>
+          <p className="text-xs text-fg-3">They&apos;ll get a request to accept.</p>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ export function AddFriendForm({ onSent }: { onSent: () => void }) {
 
       <FormError message={error} />
       {success && (
-        <div role="status" className="rounded-xl border border-jade-400/30 bg-jade-400/10 px-4 py-3 text-sm text-jade-300">
+        <div role="status" className="rounded-xl border border-jade-400/30 bg-jade-400/10 px-4 py-3 text-sm text-accent-text">
           {success}
         </div>
       )}

@@ -1,33 +1,90 @@
 @import "tailwindcss";
 
+/* Day mode is the default; night mode is the `dark` class on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---- Theme tokens ----------------------------------------------------
+   Every colour that has to change between day and night is a variable
+   here. Components use the semantic names (bg-page, text-fg-2, ...), never
+   a fixed grey, so one change here restyles the whole app.
+   lib/theme-contrast.test.ts checks these pairs stay readable. */
+:root {
+  --page: #fafafa; /* app background */
+  --panel: #ffffff; /* cards */
+  --panel-2: #f4f4f5; /* inputs, wells inside cards */
+  --wash: #09090b; /* the colour used for faint fills and borders: bg-wash/5, border-wash/10 */
+  --line: rgb(9 9 11 / 0.08);
+
+  --fg: #09090b; /* primary text */
+  --fg-2: #52525b; /* secondary text */
+  --fg-3: #6a6a73; /* tertiary text, hints */
+  --fg-4: #a1a1aa; /* disabled and decorative only */
+
+  --accent: #22c55e; /* the brand green, as a fill */
+  --accent-ink: #052e16; /* text on top of the accent fill */
+  --accent-text: #15803d; /* the accent used as text */
+  --warn: #b45309; /* "you owe", cautions */
+  --danger: #c81e1e;
+
+  --shadow-card: 0 1px 2px rgb(9 9 11 / 0.04), 0 8px 24px -12px rgb(9 9 11 / 0.14);
+}
+
+.dark {
+  --page: #09090b;
+  --panel: #111113;
+  --panel-2: #18181b;
+  --wash: #ffffff;
+  --line: rgb(255 255 255 / 0.08);
+
+  --fg: #fafafa;
+  --fg-2: #a1a1aa;
+  --fg-3: #8b8b94;
+  --fg-4: #5b5b63;
+
+  --accent: #22c55e;
+  --accent-ink: #052e16;
+  --accent-text: #4ade80;
+  --warn: #fbbf24;
+  --danger: #f87171;
+
+  --shadow-card: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 12px 32px -16px rgb(0 0 0 / 0.7);
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-wash: var(--wash);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-3: var(--fg-3);
+  --color-fg-4: var(--fg-4);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-text: var(--accent-text);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Fixed brand scales: fills and tints that read the same in both modes. */
 @theme {
-  --color-ink-950: #06100d;
-  --color-ink-900: #0a1a15;
-  --color-ink-800: #0f2620;
-  --color-ink-700: #17352c;
-  --color-ink-600: #234a3d;
-  --color-ink-500: #4d6159;
-  --color-ink-400: #7b8d85;
-  --color-ink-300: #a9b7b0;
+  --color-jade-300: #86efac;
+  --color-jade-400: #22c55e;
+  --color-jade-500: #16a34a;
+  --color-jade-600: #15803d;
+  --color-jade-700: #166534;
 
-  --color-jade-300: #7ce6c0;
-  --color-jade-400: #3fd6a3;
-  --color-jade-500: #19b887;
-  --color-jade-600: #0f9a70;
-  --color-jade-700: #0c7a58;
-
-  --color-gold-200: #f1e2b8;
-  --color-gold-300: #e6cf94;
-  --color-gold-400: #d4b25f;
-  --color-gold-500: #b8923c;
-
-  --color-ivory-50: #fdfcf8;
-  --color-ivory-100: #faf8f1;
-  --color-ivory-200: #f2eee2;
+  --color-gold-200: #fde68a;
+  --color-gold-300: #fcd34d;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
 
   --animate-float: float 9s ease-in-out infinite;
   --animate-float-slow: float 13s ease-in-out infinite reverse;
-  --animate-fade-up: fade-up 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-aurora: aurora 18s ease-in-out infinite alternate;
 
   @keyframes float {
@@ -35,7 +92,7 @@
     50% { transform: translateY(-14px) rotate(var(--r, 0deg)); }
   }
   @keyframes fade-up {
-    from { opacity: 0; transform: translateY(14px); }
+    from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: none; }
   }
   @keyframes aurora {
@@ -44,41 +101,46 @@
   }
 }
 
-@theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;
+html {
+  color-scheme: light;
 }
 
-html {
+html.dark {
   color-scheme: dark;
 }
 
 body {
-  background-color: #06100d;
-  background-image:
-    radial-gradient(1100px 600px at 8% -10%, rgb(25 184 135 / 0.16), transparent 60%),
-    radial-gradient(900px 520px at 100% 108%, rgb(212 178 95 / 0.1), transparent 60%);
+  background-color: var(--page);
+  color: var(--fg);
+  font-feature-settings: "cv11", "ss01";
+}
+
+.dark body {
+  background-image: radial-gradient(900px 480px at 50% -12%, rgb(34 197 94 / 0.07), transparent 65%);
   background-attachment: fixed;
 }
 
 ::selection {
-  background: var(--color-jade-400);
-  color: var(--color-ink-950);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
-/* Glass card used for every panel */
+/* The card used for every panel */
 .surface {
-  border: 1px solid rgb(255 255 255 / 0.09);
-  border-radius: 1.5rem;
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.022));
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.06),
-    0 30px 60px -30px rgb(0 0 0 / 0.65);
-  backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+  background: var(--panel);
+  box-shadow: var(--shadow-card);
+}
+
+/* Amounts: aligned digits so columns of money line up */
+.num {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 .text-gradient {
-  background-image: linear-gradient(120deg, var(--color-jade-300), var(--color-gold-300));
+  background-image: linear-gradient(120deg, var(--accent-text), var(--warn));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -89,22 +151,22 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.07;
+  opacity: 0.05;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
 .grid-lines {
   background-image:
-    linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+    linear-gradient(to right, color-mix(in srgb, var(--wash) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--wash) 5%, transparent) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: radial-gradient(ellipse at 30% 40%, black 30%, transparent 75%);
 }
 
 select option {
-  background: #0a1a15;
-  color: #faf8f1;
+  background: var(--panel);
+  color: var(--fg);
 }
 
 @media (prefers-reduced-motion: reduce) {
